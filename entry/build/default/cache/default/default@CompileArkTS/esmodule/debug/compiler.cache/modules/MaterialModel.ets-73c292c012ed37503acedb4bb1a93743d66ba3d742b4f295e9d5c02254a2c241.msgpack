@@ -1,0 +1,825 @@
+Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚ(½// å­¦ä¹ èµ„æ–™ç±»å‹
+export var MaterialType;
+(function (MaterialType) {
+    MaterialType["PDF"] = "pdf";
+    MaterialType["WORD"] = "word";
+    MaterialType["MARKDOWN"] = "markdown";
+    MaterialType["WEB"] = "web";
+    MaterialType["AI_GENERATED"] = "ai_generated";
+})(MaterialType || (MaterialType = {}));
+// èµ„æ–™æ¥æº
+export var MaterialSource;
+(function (MaterialSource) {
+    MaterialSource["USER_UPLOAD"] = "user_upload";
+    MaterialSource["AI_SUPPLEMENT"] = "ai_supplement";
+    MaterialSource["WEB_SEARCH"] = "web_search"; // è”ç½‘æ£€ç´¢
+})(MaterialSource || (MaterialSource = {}));
+// å­¦ä¹ èµ„æ–™æ¨¡å‹
+export class LearningMaterial {
+    constructor() {
+        this.id = '';
+        this.title = '';
+        this.type = MaterialType.PDF;
+        this.source = MaterialSource.USER_UPLOAD;
+        this.content = '';
+        this.summary = '';
+        this.keywords = [];
+        this.courseId = '';
+        this.modulePath = ''; // å…³è”çš„è¯¾ç¨‹æ¨¡å—è·¯å¾„
+        this.url = ''; // åŸå§‹URLï¼ˆå¦‚æœæ˜¯ç½‘é¡µï¼‰
+        this.filePath = ''; // æœ¬åœ°æ–‡ä»¶è·¯å¾„
+        this.fileSize = 0;
+        this.createdAt = 0;
+        this.updatedAt = 0;
+        this.isRead = false;
+        this.readProgress = 0;
+        this.rating = 0; // ç”¨æˆ·è¯„åˆ† 1-5
+        this.tags = [];
+    }
+    static generateId() {
+        return 'mat_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
+    static createFromUpload(title, type, content, courseId) {
+        const material = new LearningMaterial();
+        material.id = LearningMaterial.generateId();
+        material.title = title;
+        material.type = type;
+        material.source = MaterialSource.USER_UPLOAD;
+        material.content = content;
+        material.courseId = courseId;
+        material.createdAt = Date.now();
+        material.updatedAt = Date.now();
+        return material;
+    }
+    static createFromAI(title, content, courseId, keywords = []) {
+        const material = new LearningMaterial();
+        material.id = LearningMaterial.generateId();
+        material.title = title;
+        material.type = MaterialType.AI_GENERATED;
+        material.source = MaterialSource.AI_SUPPLEMENT;
+        material.content = content;
+        material.courseId = courseId;
+        material.keywords = keywords;
+        material.createdAt = Date.now();
+        material.updatedAt = Date.now();
+        return material;
+    }
+    static createFromWeb(title, url, content, courseId) {
+        const material = new LearningMaterial();
+        material.id = LearningMaterial.generateId();
+        material.title = title;
+        material.type = MaterialType.WEB;
+        material.source = MaterialSource.WEB_SEARCH;
+        material.url = url;
+        material.content = content;
+        material.courseId = courseId;
+        material.createdAt = Date.now();
+        material.updatedAt = Date.now();
+        return material;
+    }
+}
+// çŸ¥è¯†åº“æ¨¡å—
+export class KnowledgeModule {
+    constructor() {
+        this.id = '';
+        this.name = '';
+        this.description = '';
+        this.courseId = '';
+        this.materials = [];
+        this.parentModuleId = '';
+        this.childModules = [];
+        this.keywords = [];
+        this.createdAt = 0;
+    }
+    static generateId() {
+        return 'mod_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
+    static create(name, description, courseId, parentId = '') {
+        const module = new KnowledgeModule();
+        module.id = KnowledgeModule.generateId();
+        module.name = name;
+        module.description = description;
+        module.courseId = courseId;
+        module.parentModuleId = parentId;
+        module.createdAt = Date.now();
+        return module;
+    }
+    addMaterial(material) {
+        material.modulePath = this.id;
+        this.materials.push(material);
+    }
+    removeMaterial(materialId) {
+        this.materials = this.materials.filter(m => m.id !== materialId);
+    }
+    getMaterialCount() {
+        return this.materials.length;
+    }
+    getTotalSize() {
+        return this.materials.reduce((sum, m) => sum + m.fileSize, 0);
+    }
+}
+// å¤åˆçŸ¥è¯†åº“
+export class CompositeKnowledgeBase {
+    constructor() {
+        this.id = '';
+        this.courseId = '';
+        this.courseTitle = '';
+        this.modules = [];
+        this.allMaterials = [];
+        this.aiMaterials = [];
+        this.userMaterials = [];
+        this.createdAt = 0;
+        this.updatedAt = 0;
+    }
+    static generateId() {
+        return 'kb_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
+    static create(courseId, courseTitle) {
+        const kb = new CompositeKnowledgeBase();
+        kb.id = CompositeKnowledgeBase.generateId();
+        kb.courseId = courseId;
+        kb.courseTitle = courseTitle;
+        kb.createdAt = Date.now();
+        kb.updatedAt = Date.now();
+        return kb;
+    }
+    addModule(module) {
+        this.modules.push(module);
+        this.updatedAt = Date.now();
+    }
+    removeModule(moduleId) {
+        this.modules = this.modules.filter(m => m.id !== moduleId);
+        this.rebuildMaterialLists();
+        this.updatedAt = Date.now();
+    }
+    addMaterial(material, moduleId) {
+        if (moduleId) {
+            const module = this.findModule(moduleId);
+            if (module) {
+                module.addMaterial(material);
+            }
+        }
+        this.rebuildMaterialLists();
+        this.updatedAt = Date.now();
+    }
+    removeMaterial(materialId) {
+        for (const module of this.modules) {
+            module.removeMaterial(materialId);
+        }
+        this.rebuildMaterialLists();
+        this.updatedAt = Date.now();
+    }
+    rebuildMaterialLists() {
+        this.allMaterials = [];
+        this.aiMaterials = [];
+        this.userMaterials = [];
+        for (const module of this.modules) {
+            for (const material of module.materials) {
+                this.allMaterials.push(material);
+                if (material.source === MaterialSource.AI_SUPPLEMENT ||
+                    material.source === MaterialSource.WEB_SEARCH) {
+                    this.aiMaterials.push(material);
+                }
+                else {
+                    this.userMaterials.push(material);
+                }
+            }
+        }
+    }
+    findModule(moduleId) {
+        for (const module of this.modules) {
+            if (module.id === moduleId) {
+                return module;
+            }
+            const found = this.findModuleRecursive(module, moduleId);
+            if (found) {
+                return found;
+            }
+        }
+        return null;
+    }
+    findModuleRecursive(parent, targetId) {
+        for (const child of parent.childModules) {
+            if (child.id === targetId) {
+                return child;
+            }
+            const found = this.findModuleRecursive(child, targetId);
+            if (found) {
+                return found;
+            }
+        }
+        return null;
+    }
+    searchMaterials(query) {
+        const lowerQuery = query.toLowerCase();
+        return this.allMaterials.filter(m => m.title.toLowerCase().includes(lowerQuery) ||
+            m.summary.toLowerCase().includes(lowerQuery) ||
+            m.keywords.some(k => k.toLowerCase().includes(lowerQuery)) ||
+            m.tags.some(t => t.toLowerCase().includes(lowerQuery)));
+    }
+    filterByType(type) {
+        return this.allMaterials.filter(m => m.type === type);
+    }
+    filterBySource(source) {
+        return this.allMaterials.filter(m => m.source === source);
+    }
+    getStatistics() {
+        const stats = new KnowledgeBaseStats();
+        stats.totalMaterials = this.allMaterials.length;
+        stats.aiMaterials = this.aiMaterials.length;
+        stats.userMaterials = this.userMaterials.length;
+        stats.totalSize = this.allMaterials.reduce((sum, m) => sum + m.fileSize, 0);
+        stats.moduleCount = this.modules.length;
+        stats.readCount = this.allMaterials.filter(m => m.isRead).length;
+        stats.averageRating = this.calculateAverageRating();
+        return stats;
+    }
+    calculateAverageRating() {
+        const rated = this.allMaterials.filter(m => m.rating > 0);
+        if (rated.length === 0)
+            return 0;
+        return rated.reduce((sum, m) => sum + m.rating, 0) / rated.length;
+    }
+}
+// çŸ¥è¯†åº“ç»Ÿè®¡
+export class KnowledgeBaseStats {
+    constructor() {
+        this.totalMaterials = 0;
+        this.aiMaterials = 0;
+        this.userMaterials = 0;
+        this.totalSize = 0;
+        this.moduleCount = 0;
+        this.readCount = 0;
+        this.averageRating = 0;
+    }
+}
+// èµ„æ–™èåˆç»“æœ
+export class FusionResult {
+    constructor() {
+        this.success = false;
+        this.mergedContent = '';
+        this.conflicts = [];
+        this.suggestions = [];
+        this.keywords = [];
+    }
+}
+// èµ„æ–™è§£æå™¨
+export class MaterialParser {
+    static parsePDF(content) {
+        // ç®€åŒ–çš„PDFè§£æï¼Œå®é™…éœ€è¦ä½¿ç”¨ä¸“ä¸šåº“
+        return content;
+    }
+    static parseWord(content) {
+        // ç®€åŒ–çš„Wordè§£æ
+        return content;
+    }
+    static parseMarkdown(content) {
+        // Markdownè§£æï¼Œä¿ç•™æ ¼å¼
+        return content;
+    }
+    static extractKeywords(content) {
+        // ç®€å•çš„å…³é”®è¯æå–ï¼ˆå®é™…åº”ä½¿ç”¨NLPï¼‰
+        const words = content.split(/\s+/);
+        const wordCount = new Map();
+        for (const word of words) {
+            const lower = word.toLowerCase();
+            if (lower.length > 3) {
+                wordCount.set(lower, (wordCount.get(lower) || 0) + 1);
+            }
+        }
+        const sorted = Array.from(wordCount.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(item => item[0]);
+        return sorted;
+    }
+    static generateSummary(content, maxLength = 200) {
+        if (content.length <= maxLength) {
+            return content;
+        }
+        // ç®€å•æˆªå–ï¼Œå®é™…åº”ä½¿ç”¨AIç”Ÿæˆæ‘˜è¦
+        return content.substring(0, maxLength) + '...';
+    }
+}
+//# sourceMappingURL=MaterialModel.js.mapÂÙFC:\Users\wyyd\Desktop\study\entry\src\main\ets\model\MaterialModel.etsÔrBœªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo¯hostModulesInfo°belongModulePath§checker¬shouldEmitJs¥entryÃÂÙ!C:\Users\wyyd\Desktop\study\entry»C:\Users\wyyd\Desktop\study¥entry¥1.0.0Ô  ’ÔrC’²hostDependencyName®hostModuleName¶../model/MaterialModel¥entryC¶../model/MaterialModel¥entryÙ!C:\Users\wyyd\Desktop\study\entryÔrDÜ ®¬getNodeCount²getIdentifierCount®getSymbolCount¬getTypeCountµgetInstantiationCountµgetRelationCacheSizes±isUndefinedSymbol±isArgumentsSymbol¯isUnknownSymbol¯getMergedSymbol®getDiagnostics´getGlobalDiagnostics´getRecursionIdentity¶getUnmatchedProperties¹getTypeOfSymbolAtLocation¯getTypeOfSymbolÙ(getSymbolsOfParameterPropertyDeclaration·getDeclaredTypeOfSymbol³getPropertiesOfType±getPropertyOfTypeÙ"getPrivateIdentifierPropertyOfType·getTypeOfPropertyOfType²getIndexInfoOfType³getIndexInfosOfTypeºgetIndexInfosOfIndexSymbol³getSignaturesOfType²getIndexTypeOfType¬getIndexType¬getBaseTypes¸getBaseTypeOfLiteralType®getWidenedType³getTypeFromTypeNode°getParameterTypeÙ$getParameterIdentifierNameAtPosition¸getPromisedTypeOfPromise®getAwaitedType¸getReturnTypeOfSignature®isNullableType¯getNullableType²getNonNullableType²getNonOptionalType°getTypeArguments®typeToTypeNodeÙ$indexInfoToIndexSignatureDeclaration¿signatureToSignatureDeclaration²symbolToEntityName²symbolToExpression¬symbolToNodeÙ!symbolToTypeParameterDeclarations¼symbolToParameterDeclarationºtypeParameterToDeclaration±getSymbolsInScope³getSymbolAtLocation·getIndexInfosAtLocationÙ!getShorthandAssignmentValueSymbolÙ#getExportSpecifierLocalTargetSymbol·getExportSymbolOfSymbol±getTypeAtLocationºgetTypeAtLocationForLinterÙ tryGetTypeAtLocationWithoutCheckºgetTypeOfAssignmentPatternÙ*getPropertySymbolOfDestructuringAssignment±signatureToString¬typeToString®symbolToStringµtypePredicateToString®writeSignature©writeType«writeSymbol²writeTypePredicate¼getAugmentedPropertiesOfType®getRootSymbols²getSymbolOfExpando±getContextualTypeÙ(getContextualTypeForObjectLiteralElementÙ#getContextualTypeForArgumentAtIndexÙ getContextualTypeForJsxAttribute²isContextSensitiveÙ!getTypeOfPropertyOfContextualTypeµgetFullyQualifiedNameÙ#tryGetResolvedSignatureWithoutCheck´getResolvedSignatureÙ/getResolvedSignatureForStringLiteralCompletionsÙ$getResolvedSignatureForSignatureHelpµgetExpandedParameters¹hasEffectiveRestParameterºcontainsArgumentsReference°getConstantValueµisValidPropertyAccessÙ#isValidPropertyAccessForCompletions»getSignatureFromDeclarationºisImplementationOfOverload¹getImmediateAliasedSymbol°getAliasedSymbol¯getEmitResolver²getExportsOfModule¿getExportsAndPropertiesOfModuleÙ forEachExportAndPropertyOfModule¯getSymbolWalker±getAmbientModules¹getJsxIntrinsicTagNamesAt³isOptionalParameter»tryGetMemberInModuleExportsÙ(tryGetMemberInModuleExportsAndProperties´tryFindAmbientModuleÙ(tryFindAmbientModuleWithoutAugmentations¯getApparentType¬getUnionType²isTypeAssignableTo³createAnonymousType¯createSignature¬createSymbol¯createIndexInfoªgetAnyType­getStringType­getNumberType±createPromiseType¯createArrayType¹getElementTypeOfArrayType®getBooleanType¬getFalseType«getTrueType«getVoidType°getUndefinedType«getNullType¯getESSymbolType¬getNeverType¯getOptionalType®getPromiseType²getPromiseLikeType´getAsyncIterableType²isSymbolAccessible«isArrayType«isTupleType¯isArrayLikeTypeÙ#isTypeInvalidDueToUnionDiscriminantºgetExactOptionalProperties¿getAllPossiblePropertiesOfTypesÙ(getSuggestedSymbolForNonexistentPropertyÙ#getSuggestionForNonexistentPropertyÙ,getSuggestedSymbolForNonexistentJSXAttributeÙ&getSuggestedSymbolForNonexistentSymbolÙ!getSuggestionForNonexistentSymbolÙ&getSuggestedSymbolForNonexistentModuleÙ!getSuggestionForNonexistentExportÙ+getSuggestedSymbolForNonexistentClassMember·getBaseConstraintOfType»getDefaultFromTypeParameter«resolveName¯getJsxNamespaceµgetJsxFragmentFactory¸getAccessibleSymbolChain»getTypePredicateOfSignature¹resolveExternalModuleName»resolveExternalModuleSymbol°tryGetThisTypeAt¹getTypeArgumentConstraint¸getSuggestionDiagnostics¸runWithCancellationTokenÙ3getLocalTypeParametersOfClassOrInterfaceOrTypeAlias´isDeclarationVisible´isPropertyAccessible»getTypeOnlyAliasDeclaration¿getMemberOverrideModifierStatusÙ!isTypeParameterPossiblyReferenced²getConstEnumRelate´clearConstEnumRelateµdeleteConstEnumRelateÙ$getTypeArgumentsForResolvedSignatureµgetCheckedSourceFilesÙ"collectHaveTsNoCheckFilesForLinter·clearQualifiedNameCache®isStaticRecord²isStaticSourceFileÔ  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  ÃÃÚ%ö// å­¦ä¹ èµ„æ–™ç±»å‹
+export enum MaterialType {
+  PDF = 'pdf',
+  WORD = 'word',
+  MARKDOWN = 'markdown',
+  WEB = 'web',
+  AI_GENERATED = 'ai_generated'
+}
+
+// èµ„æ–™æ¥æº
+export enum MaterialSource {
+  USER_UPLOAD = 'user_upload',      // ç”¨æˆ·ä¸Šä¼ 
+  AI_SUPPLEMENT = 'ai_supplement',   // AIæ™ºèƒ½è¡¥å……
+  WEB_SEARCH = 'web_search'         // è”ç½‘æ£€ç´¢
+}
+
+// å­¦ä¹ èµ„æ–™æ¨¡å‹
+export class LearningMaterial {
+  id: string = '';
+  title: string = '';
+  type: MaterialType = MaterialType.PDF;
+  source: MaterialSource = MaterialSource.USER_UPLOAD;
+  content: string = '';
+  summary: string = '';
+  keywords: string[] = [];
+  courseId: string = '';
+  modulePath: string = '';  // å…³è”çš„è¯¾ç¨‹æ¨¡å—è·¯å¾„
+  url: string = '';         // åŸå§‹URLï¼ˆå¦‚æœæ˜¯ç½‘é¡µï¼‰
+  filePath: string = '';    // æœ¬åœ°æ–‡ä»¶è·¯å¾„
+  fileSize: number = 0;
+  createdAt: number = 0;
+  updatedAt: number = 0;
+  isRead: boolean = false;
+  readProgress: number = 0;
+  rating: number = 0;       // ç”¨æˆ·è¯„åˆ† 1-5
+  tags: string[] = [];
+
+  static generateId(): string {
+    return 'mat_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  static createFromUpload(
+    title: string,
+    type: MaterialType,
+    content: string,
+    courseId: string
+  ): LearningMaterial {
+    const material = new LearningMaterial();
+    material.id = LearningMaterial.generateId();
+    material.title = title;
+    material.type = type;
+    material.source = MaterialSource.USER_UPLOAD;
+    material.content = content;
+    material.courseId = courseId;
+    material.createdAt = Date.now();
+    material.updatedAt = Date.now();
+    return material;
+  }
+
+  static createFromAI(
+    title: string,
+    content: string,
+    courseId: string,
+    keywords: string[] = []
+  ): LearningMaterial {
+    const material = new LearningMaterial();
+    material.id = LearningMaterial.generateId();
+    material.title = title;
+    material.type = MaterialType.AI_GENERATED;
+    material.source = MaterialSource.AI_SUPPLEMENT;
+    material.content = content;
+    material.courseId = courseId;
+    material.keywords = keywords;
+    material.createdAt = Date.now();
+    material.updatedAt = Date.now();
+    return material;
+  }
+
+  static createFromWeb(
+    title: string,
+    url: string,
+    content: string,
+    courseId: string
+  ): LearningMaterial {
+    const material = new LearningMaterial();
+    material.id = LearningMaterial.generateId();
+    material.title = title;
+    material.type = MaterialType.WEB;
+    material.source = MaterialSource.WEB_SEARCH;
+    material.url = url;
+    material.content = content;
+    material.courseId = courseId;
+    material.createdAt = Date.now();
+    material.updatedAt = Date.now();
+    return material;
+  }
+}
+
+// çŸ¥è¯†åº“æ¨¡å—
+export class KnowledgeModule {
+  id: string = '';
+  name: string = '';
+  description: string = '';
+  courseId: string = '';
+  materials: LearningMaterial[] = [];
+  parentModuleId: string = '';
+  childModules: KnowledgeModule[] = [];
+  keywords: string[] = [];
+  createdAt: number = 0;
+
+  static generateId(): string {
+    return 'mod_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  static create(
+    name: string,
+    description: string,
+    courseId: string,
+    parentId: string = ''
+  ): KnowledgeModule {
+    const module = new KnowledgeModule();
+    module.id = KnowledgeModule.generateId();
+    module.name = name;
+    module.description = description;
+    module.courseId = courseId;
+    module.parentModuleId = parentId;
+    module.createdAt = Date.now();
+    return module;
+  }
+
+  addMaterial(material: LearningMaterial): void {
+    material.modulePath = this.id;
+    this.materials.push(material);
+  }
+
+  removeMaterial(materialId: string): void {
+    this.materials = this.materials.filter(m => m.id !== materialId);
+  }
+
+  getMaterialCount(): number {
+    return this.materials.length;
+  }
+
+  getTotalSize(): number {
+    return this.materials.reduce((sum, m) => sum + m.fileSize, 0);
+  }
+}
+
+// å¤åˆçŸ¥è¯†åº“
+export class CompositeKnowledgeBase {
+  id: string = '';
+  courseId: string = '';
+  courseTitle: string = '';
+  modules: KnowledgeModule[] = [];
+  allMaterials: LearningMaterial[] = [];
+  aiMaterials: LearningMaterial[] = [];
+  userMaterials: LearningMaterial[] = [];
+  createdAt: number = 0;
+  updatedAt: number = 0;
+
+  static generateId(): string {
+    return 'kb_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  static create(courseId: string, courseTitle: string): CompositeKnowledgeBase {
+    const kb = new CompositeKnowledgeBase();
+    kb.id = CompositeKnowledgeBase.generateId();
+    kb.courseId = courseId;
+    kb.courseTitle = courseTitle;
+    kb.createdAt = Date.now();
+    kb.updatedAt = Date.now();
+    return kb;
+  }
+
+  addModule(module: KnowledgeModule): void {
+    this.modules.push(module);
+    this.updatedAt = Date.now();
+  }
+
+  removeModule(moduleId: string): void {
+    this.modules = this.modules.filter(m => m.id !== moduleId);
+    this.rebuildMaterialLists();
+    this.updatedAt = Date.now();
+  }
+
+  addMaterial(material: LearningMaterial, moduleId?: string): void {
+    if (moduleId) {
+      const module = this.findModule(moduleId);
+      if (module) {
+        module.addMaterial(material);
+      }
+    }
+    this.rebuildMaterialLists();
+    this.updatedAt = Date.now();
+  }
+
+  removeMaterial(materialId: string): void {
+    for (const module of this.modules) {
+      module.removeMaterial(materialId);
+    }
+    this.rebuildMaterialLists();
+    this.updatedAt = Date.now();
+  }
+
+  rebuildMaterialLists(): void {
+    this.allMaterials = [];
+    this.aiMaterials = [];
+    this.userMaterials = [];
+
+    for (const module of this.modules) {
+      for (const material of module.materials) {
+        this.allMaterials.push(material);
+        if (material.source === MaterialSource.AI_SUPPLEMENT ||
+            material.source === MaterialSource.WEB_SEARCH) {
+          this.aiMaterials.push(material);
+        } else {
+          this.userMaterials.push(material);
+        }
+      }
+    }
+  }
+
+  findModule(moduleId: string): KnowledgeModule | null {
+    for (const module of this.modules) {
+      if (module.id === moduleId) {
+        return module;
+      }
+      const found = this.findModuleRecursive(module, moduleId);
+      if (found) {
+        return found;
+      }
+    }
+    return null;
+  }
+
+  private findModuleRecursive(parent: KnowledgeModule, targetId: string): KnowledgeModule | null {
+    for (const child of parent.childModules) {
+      if (child.id === targetId) {
+        return child;
+      }
+      const found = this.findModuleRecursive(child, targetId);
+      if (found) {
+        return found;
+      }
+    }
+    return null;
+  }
+
+  searchMaterials(query: string): LearningMaterial[] {
+    const lowerQuery = query.toLowerCase();
+    return this.allMaterials.filter(m => 
+      m.title.toLowerCase().includes(lowerQuery) ||
+      m.summary.toLowerCase().includes(lowerQuery) ||
+      m.keywords.some(k => k.toLowerCase().includes(lowerQuery)) ||
+      m.tags.some(t => t.toLowerCase().includes(lowerQuery))
+    );
+  }
+
+  filterByType(type: MaterialType): LearningMaterial[] {
+    return this.allMaterials.filter(m => m.type === type);
+  }
+
+  filterBySource(source: MaterialSource): LearningMaterial[] {
+    return this.allMaterials.filter(m => m.source === source);
+  }
+
+  getStatistics(): KnowledgeBaseStats {
+    const stats = new KnowledgeBaseStats();
+    stats.totalMaterials = this.allMaterials.length;
+    stats.aiMaterials = this.aiMaterials.length;
+    stats.userMaterials = this.userMaterials.length;
+    stats.totalSize = this.allMaterials.reduce((sum, m) => sum + m.fileSize, 0);
+    stats.moduleCount = this.modules.length;
+    stats.readCount = this.allMaterials.filter(m => m.isRead).length;
+    stats.averageRating = this.calculateAverageRating();
+    return stats;
+  }
+
+  private calculateAverageRating(): number {
+    const rated = this.allMaterials.filter(m => m.rating > 0);
+    if (rated.length === 0) return 0;
+    return rated.reduce((sum, m) => sum + m.rating, 0) / rated.length;
+  }
+}
+
+// çŸ¥è¯†åº“ç»Ÿè®¡
+export class KnowledgeBaseStats {
+  totalMaterials: number = 0;
+  aiMaterials: number = 0;
+  userMaterials: number = 0;
+  totalSize: number = 0;
+  moduleCount: number = 0;
+  readCount: number = 0;
+  averageRating: number = 0;
+}
+
+// èµ„æ–™èåˆç»“æœ
+export class FusionResult {
+  success: boolean = false;
+  mergedContent: string = '';
+  conflicts: string[] = [];
+  suggestions: string[] = [];
+  keywords: string[] = [];
+}
+
+// èµ„æ–™è§£æå™¨
+export class MaterialParser {
+  static parsePDF(content: string): string {
+    // ç®€åŒ–çš„PDFè§£æï¼Œå®é™…éœ€è¦ä½¿ç”¨ä¸“ä¸šåº“
+    return content;
+  }
+
+  static parseWord(content: string): string {
+    // ç®€åŒ–çš„Wordè§£æ
+    return content;
+  }
+
+  static parseMarkdown(content: string): string {
+    // Markdownè§£æï¼Œä¿ç•™æ ¼å¼
+    return content;
+  }
+
+  static extractKeywords(content: string): string[] {
+    // ç®€å•çš„å…³é”®è¯æå–ï¼ˆå®é™…åº”ä½¿ç”¨NLPï¼‰
+    const words = content.split(/\s+/);
+    const wordCount: Map<string, number> = new Map();
+    
+    for (const word of words) {
+      const lower = word.toLowerCase();
+      if (lower.length > 3) {
+        wordCount.set(lower, (wordCount.get(lower) || 0) + 1);
+      }
+    }
+
+    const sorted = Array.from(wordCount.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(item => item[0]);
+
+    return sorted;
+  }
+
+  static generateSummary(content: string, maxLength: number = 200): string {
+    if (content.length <= maxLength) {
+      return content;
+    }
+    // ç®€å•æˆªå–ï¼Œå®é™…åº”ä½¿ç”¨AIç”Ÿæˆæ‘˜è¦
+    return content.substring(0, maxLength) + '...';
+  }
+}
+ÀA“ÔrE–§version¤fileªsourceRoot§sources¥names¨mappings°MaterialModel.js ‘±MaterialModel.etsÜ/’”    ”	  	•”   ” ”  ” ” “”   ” ” “” ” ”  “” ”! ”" “” ”) ”* “” ” ”  “” ”1 ”2 —”   ” ” ” ” ”  ”( ’”  	 ” 	•”  
+ ” 
+” 
+ ” 
+” “”  
+ ” 
+” 
+“” ”1 ”2 “” ”5 !”6 !•” ”/ ”0 ”1 $”8 +—”   ” ” 
+” 
+” 
+”$ 
+”, ’”   ”	 	””   ” ” ” ‘”  •” ” ” ” ” •” ” ” ” ” —” ” ” ”  #”! $”$ '”% (—” ” ” ”$ )”% *”0 5”1 6•” ” 	” ” ” •” ” 	” ” ” •” ” 
+” ” ” •” ” 
+” ” ” —” ” ” ” ” ” ”* (—” ” ” ” ” ” ”& +—” ” 
+” ” ” ” ”% %•” ” 
+” ” ” •” ” ” ” ” •” ” ” ” ” •”  ”  ”  ”  ”  •” !” !” !” !” !—” "” "” "” "” "” "”$ "'•” #” #” #” #” #’” Ì` ” Ì`”” %”
+ %” %	” %Ü ” &” &” &” &” &” &”  &”" &”# &”+ &'”, &(”. &*”/ &+”2 &.”6 &2”7 &3”= &9”? &;”Ì@ &<”ÌH &ÌD”ÌI &ÌE”ÌK &ÌG”ÌL &ÌH”ÌM &ÌI”ÌR &ÌN”ÌS &ÌO”ÌT &ÌP”ÌV &ÌR”ÌW &ÌS”ÌX &ÌT”ÌY &ÌU’” '” 'œ” )”
+ )” )	” )” *”! *”# +”' +”) ,”0 ,”2 -”: -˜” /” /
+” /” /” /”- /)”/ /+”0 /,š” 0” 0” 0” 0” 0”& 0"”' 0#”1 0-”3 0/”4 00—” 1” 1” 1” 1” 1” 1” 1—” 2” 2” 2” 2” 2” 2” 2™” 3” 3” 3” 3” 3”( 3$”) 3%”4 30”5 31—” 4” 4” 4” 4” 4”" 4”# 4—” 5” 5” 5” 5” 5”$ 5 ”% 5!š” 6” 6” 6” 6” 6”! 6”" 6”% 6!”' 6#”( 6$š” 7” 7” 7” 7” 7”! 7”" 7”% 7!”' 7#”( 7$”” 8” 8” 8” 8’” 9” 9” ;”
+ ;” ;	” ;” <” <” =”& =”( >”0 >”2 ?”= ?”? ?˜” ÌA” ÌA
+” ÌA” ÌA” ÌA”- ÌA)”/ ÌA+”0 ÌA,š” ÌB” ÌB” ÌB” ÌB” ÌB”& ÌB"”' ÌB#”1 ÌB-”3 ÌB/”4 ÌB0—” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC™” ÌD” ÌD” ÌD” ÌD” ÌD”$ ÌD ”% ÌD!”1 ÌD-”2 ÌD.™” ÌE” ÌE” ÌE” ÌE” ÌE”( ÌE$”) ÌE%”6 ÌE2”7 ÌE3—” ÌF” ÌF” ÌF” ÌF” ÌF”" ÌF”# ÌF—” ÌG” ÌG” ÌG” ÌG” ÌG”$ ÌG ”% ÌG!—” ÌH” ÌH” ÌH” ÌH” ÌH”$ ÌH ”% ÌH!š” ÌI” ÌI” ÌI” ÌI” ÌI”! ÌI”" ÌI”% ÌI!”' ÌI#”( ÌI$š” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ”! ÌJ”" ÌJ”% ÌJ!”' ÌJ#”( ÌJ$”” ÌK” ÌK” ÌK” ÌK’” ÌL” ÌLœ” ÌN”
+ ÌN” ÌN	” ÌN” ÌO” ÌO”  ÌP”# ÌP”% ÌQ”, ÌQ”. ÌR”6 ÌR˜” ÌT” ÌT
+” ÌT” ÌT” ÌT”- ÌT)”/ ÌT+”0 ÌT,š” ÌU” ÌU” ÌU” ÌU” ÌU”& ÌU"”' ÌU#”1 ÌU-”3 ÌU/”4 ÌU0—” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV™” ÌW” ÌW” ÌW” ÌW” ÌW”$ ÌW ”% ÌW!”( ÌW$”) ÌW%™” ÌX” ÌX” ÌX” ÌX” ÌX”( ÌX$”) ÌX%”3 ÌX/”4 ÌX0—” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY—” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ”" ÌZ”# ÌZ—” Ì[” Ì[” Ì[” Ì[” Ì[”$ Ì[ ”% Ì[!š” Ì\” Ì\” Ì\” Ì\” Ì\”! Ì\”" Ì\”% Ì\!”' Ì\#”( Ì\$š” Ì]” Ì]” Ì]” Ì]” Ì]”! Ì]”" Ì]”% Ì]!”' Ì]#”( Ì]$”” Ì^” Ì^” Ì^” Ì^’” Ì_” Ì_‘” Ì`’”  Ìb ” Ìb””  Ìc ” Ìc” Ìc” Ìc‘” Ìc •” Ìd” Ìd” Ìd” Ìd” Ìd•” Ìe” Ìe” Ìe” Ìe” Ìe•” Ìf” Ìf” Ìf” Ìf” Ìf•” Ìg” Ìg
+” Ìg” Ìg” Ìg•” Ìh” Ìh” Ìh"” Ìh$” Ìh%•” Ìi” Ìi” Ìi”  Ìi”! Ìi•” Ìj” Ìj” Ìj$” Ìj&” Ìj'•” Ìk” Ìk
+” Ìk” Ìk” Ìk•” Ìl” Ìl” Ìl” Ìl” Ìl’” Ì’ ” Ì’”” Ìn”
+ Ìn” Ìn	” ÌnÜ ” Ìo” Ìo” Ìo” Ìo” Ìo” Ìo”  Ìo”" Ìo”# Ìo”+ Ìo'”, Ìo(”. Ìo*”/ Ìo+”2 Ìo.”6 Ìo2”7 Ìo3”= Ìo9”? Ìo;”Ì@ Ìo<”ÌH ÌoÌD”ÌI ÌoÌE”ÌK ÌoÌG”ÌL ÌoÌH”ÌM ÌoÌI”ÌR ÌoÌN”ÌS ÌoÌO”ÌT ÌoÌP”ÌV ÌoÌR”ÌW ÌoÌS”ÌX ÌoÌT”ÌY ÌoÌU’” Ìp” Ìp” Ìr”
+ Ìr” Ìr	” Ìr” Ìs” Ìs” Ìt”# Ìt”% Ìu”- Ìu”/ Ìv”: Ìv”< Ìv˜” Ìx” Ìx
+” Ìx” Ìx” Ìx”* Ìx&”, Ìx(”- Ìx)š” Ìy” Ìy
+” Ìy” Ìy” Ìy”# Ìy”$ Ìy ”. Ìy*”0 Ìy,”1 Ìy-—” Ìz” Ìz
+” Ìz” Ìz” Ìz” Ìz” Ìz—” Ì{” Ì{
+” Ì{” Ì{” Ì{”( Ì{$”) Ì{%—” Ì|” Ì|
+” Ì|” Ì|” Ì|”" Ì|”# Ì|—” Ì}” Ì}
+” Ì}” Ì}”  Ì}”( Ì}$”) Ì}%š” Ì~” Ì~
+” Ì~” Ì~” Ì~” Ì~”  Ì~”# Ì~”% Ì~!”& Ì~"”” Ì” Ì” Ì” Ì’” Ì€” Ì€”” Ì‚” Ì‚” Ì‚” Ì‚(™” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ”" Ìƒ”# Ìƒ”% Ìƒ!”& Ìƒ"š” Ì„” Ì„” Ì„	” Ì„” Ì„” Ì„” Ì„”$ Ì„ ”% Ì„!”& Ì„"’” Ì…” Ì…”” Ì‡” Ì‡” Ì‡” Ì‡#Ü ” Ìˆ” Ìˆ” Ìˆ	” Ìˆ” Ìˆ” Ìˆ” Ìˆ”' Ìˆ#”( Ìˆ$”. Ìˆ*”/ Ìˆ+”0 Ìˆ,”1 Ìˆ-”3 Ìˆ/”4 Ìˆ0”5 Ìˆ1”6 Ìˆ2”8 Ìˆ4”= Ìˆ9”ÌG ÌˆÌC”ÌH ÌˆÌD”ÌI ÌˆÌE’” Ì‰” Ì‰’” Ì‹” Ì‹˜” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ”$ ÌŒ ”% ÌŒ!’” Ì” Ì’” Ì” ÌÜ ” Ì” Ì” Ì” Ì” Ì” Ì”$ Ì ”% Ì!”& Ì"”) Ì%”+ Ì'”, Ì(”. Ì*”0 Ì,”1 Ì-”4 Ì0”7 Ì3”8 Ì4”9 Ì5”ÌA Ì=”ÌC Ì?”ÌD ÌÌ@”ÌE ÌÌA”ÌF ÌÌB’” Ì‘” Ì‘‘” Ì’’”  Ì” ” Ì”””  Ì• ” Ì•” Ì•”# Ì•#‘” Ì• •” Ì–” Ì–” Ì–” Ì–” Ì–•” Ì—” Ì—
+” Ì—” Ì—” Ì—•” Ì˜” Ì˜” Ì˜” Ì˜” Ì˜•” Ì™” Ì™	” Ì™” Ì™!” Ì™"•” Ìš” Ìš” Ìš%” Ìš'” Ìš(•” Ì›” Ì›” Ì›$” Ì›&” Ì›'•” Ìœ” Ìœ” Ìœ&” Ìœ(”  Ìœ)•” Ì” Ì” Ì” Ì” Ì•” Ì” Ì” Ì” Ì” Ì’” Í ” Í”” Ì ”
+ Ì ” Ì 	” Ì Ü ” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡”! Ì¡”" Ì¡”* Ì¡&”+ Ì¡'”- Ì¡)”. Ì¡*”1 Ì¡-”5 Ì¡1”6 Ì¡2”< Ì¡8”> Ì¡:”? Ì¡;”ÌG Ì¡ÌC”ÌH Ì¡ÌD”ÌJ Ì¡ÌF”ÌK Ì¡ÌG”ÌL Ì¡ÌH”ÌQ Ì¡ÌM”ÌR Ì¡ÌN”ÌS Ì¡ÌO”ÌU Ì¡ÌQ”ÌV Ì¡ÌR”ÌW Ì¡ÌS”ÌX Ì¡ÌT’” Ì¢” Ì¢˜” Ì¤”
+ Ì¤” Ì¤	” Ì¤” Ì¤” Ì¤ ” Ì¤"”' Ì¤5˜” Ì¥” Ì¥
+” Ì¥” Ì¥” Ì¥”- Ì¥)”/ Ì¥+”0 Ì¥,š” Ì¦”
+ Ì¦” Ì¦” Ì¦	” Ì¦”& Ì¦"”' Ì¦#”1 Ì¦-”3 Ì¦/”4 Ì¦0—” Ì§”
+ Ì§” Ì§” Ì§” Ì§” Ì§” Ì§—” Ì¨”
+ Ì¨” Ì¨” Ì¨” Ì¨”$ Ì¨ ”% Ì¨!š” Ì©”
+ Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©”! Ì©”" Ì©š” Ìª”
+ Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª”! Ìª”" Ìª”” Ì«” Ì«” Ì«” Ì«’” Ì¬” Ì¬”” Ì®” Ì®” Ì®” Ì®#š” Ì¯” Ì¯” Ì¯	” Ì¯” Ì¯” Ì¯” Ì¯”  Ì¯”! Ì¯”" Ì¯š” Ì°” Ì°” Ì°	” Ì°” Ì°” Ì°” Ì°”! Ì°”# Ì°”$ Ì° ’” Ì±” Ì±”” Ì³” Ì³” Ì³” Ì³Ü ” Ì´” Ì´” Ì´	” Ì´” Ì´” Ì´” Ì´”# Ì´”$ Ì´ ”* Ì´&”+ Ì´'”, Ì´(”- Ì´)”/ Ì´+”0 Ì´,”1 Ì´-”2 Ì´.”4 Ì´0”9 Ì´5”ÌA Ì´=”ÌB Ì´>”ÌC Ì´?–” Ìµ” Ìµ” Ìµ	”! Ìµ”# Ìµ”$ Ìµ š” Ì¶” Ì¶” Ì¶	” Ì¶” Ì¶” Ì¶” Ì¶”! Ì¶”# Ì¶”$ Ì¶ ’” Ì·” Ì·–” Ì¹” Ì¹” Ì¹” Ì¹(” Ì¹*”" Ì¹;”” Ìº” Ìº” Ìº” Ìº›” Ì»” Ì»” Ì»” Ì»” Ì»”  Ì»”* Ì»$”+ Ì»%”3 Ì»-”4 Ì».”5 Ì»/”” Ì¼” Ì¼
+” Ì¼” Ì¼˜” Ì½” Ì½” Ì½”" Ì½”# Ì½”+ Ì½#”, Ì½$”- Ì½%‘” Ì¾‘”	 Ì¿–” ÌÀ” ÌÀ” ÌÀ	”! ÌÀ”# ÌÀ”$ ÌÀ š” ÌÁ” ÌÁ” ÌÁ	” ÌÁ” ÌÁ” ÌÁ” ÌÁ”! ÌÁ”# ÌÁ”$ ÌÁ ’” ÌÂ” ÌÂ”” ÌÄ” ÌÄ” ÌÄ” ÌÄ#™” ÌÅ” ÌÅ	” ÌÅ” ÌÅ” ÌÅ”! ÌÅ”" ÌÅ”) ÌÅ%”+ ÌÅ'˜” ÌÆ” ÌÆ” ÌÆ”! ÌÆ”" ÌÆ”, ÌÆ&”- ÌÆ'”. ÌÆ(‘”	 ÌÇ–” ÌÈ” ÌÈ” ÌÈ	”! ÌÈ”# ÌÈ”$ ÌÈ š” ÌÉ” ÌÉ” ÌÉ	” ÌÉ” ÌÉ” ÌÉ” ÌÉ”! ÌÉ”# ÌÉ”$ ÌÉ ’” ÌÊ” ÌÊ’” ÌÌ” ÌÌ—” ÌÍ” ÌÍ” ÌÍ	” ÌÍ” ÌÍ” ÌÍ” ÌÍ—” ÌÎ” ÌÎ” ÌÎ	” ÌÎ” ÌÎ” ÌÎ” ÌÎ—” ÌÏ” ÌÏ” ÌÏ	” ÌÏ” ÌÏ” ÌÏ”  ÌÏ™” ÌÑ” ÌÑ	” ÌÑ” ÌÑ” ÌÑ”! ÌÑ”" ÌÑ”) ÌÑ%”+ ÌÑ'™” ÌÒ” ÌÒ” ÌÒ” ÌÒ”# ÌÒ”) ÌÒ#”* ÌÒ$”3 ÌÒ-”5 ÌÒ/š” ÌÓ” ÌÓ” ÌÓ”! ÌÓ”" ÌÓ”& ÌÓ”' ÌÓ”/ ÌÓ'”0 ÌÓ(”1 ÌÓ)™” ÌÔ” ÌÔ” ÌÔ” ÌÔ”# ÌÔ”( ÌÔ ”6 ÌÔ.”7 ÌÔ/”ÌD ÌÔ<™” ÌÕ” ÌÕ” ÌÕ”# ÌÕ”( ÌÕ ”6 ÌÕ.”7 ÌÕ/”ÌA ÌÕ9”ÌC ÌÕ;š” ÌÖ
+” ÌÖ” ÌÖ”$ ÌÖ”% ÌÖ”) ÌÖ”* ÌÖ ”2 ÌÖ(”3 ÌÖ)”4 ÌÖ*‘” Ì×	‘” Ì×š” ÌØ
+” ÌØ” ÌØ”& ÌØ”' ÌØ”+ ÌØ!”, ÌØ"”4 ÌØ*”5 ÌØ+”6 ÌØ,‘” ÌÙ	‘” ÌÚ‘”	 ÌÛ’” ÌÜ” ÌÜ”” ÌŞ” ÌŞ” ÌŞ” ÌŞ™” Ìß” Ìß	” Ìß” Ìß” Ìß”! Ìß”" Ìß”) Ìß%”+ Ìß'˜” Ìà” Ìà
+” Ìà” Ìà” Ìà” Ìà”& Ìà ”( Ìà"”” Ìá” Ìá” Ìá” Ìá‘” Ìâ” Ìã” Ìã” Ìã” Ìã” Ìã” Ìã”2 Ìã,”3 Ìã-”9 Ìã3”; Ìã5”ÌC Ìã=”ÌD Ìã>”ÌE Ìã?”” Ìä” Ìä
+” Ìä” Ìä”” Ìå” Ìå” Ìå” Ìå‘” Ìæ‘”	 Ìç”” Ìè” Ìè” Ìè” Ìè’” Ìé” Ìé–” Ìë
+” Ìë” Ìë” Ìë5”  Ìë7”( ÌëÌG™” Ìì” Ìì	” Ìì” Ìì” Ìì”" Ìì”# Ìì”/ Ìì+”1 Ìì-˜” Ìí” Ìí
+” Ìí” Ìí” Ìí” Ìí”% Ìí”' Ìí!”” Ìî” Ìî” Ìî” Ìî‘” Ìï” Ìğ” Ìğ” Ìğ” Ìğ” Ìğ” Ìğ”2 Ìğ,”3 Ìğ-”8 Ìğ2”: Ìğ4”ÌB Ìğ<”ÌC Ìğ=”ÌD Ìğ>”” Ìñ” Ìñ
+” Ìñ” Ìñ”” Ìò” Ìò” Ìò” Ìò‘” Ìó‘”	 Ìô”” Ìõ” Ìõ” Ìõ” Ìõ’” Ìö” Ìö”” Ìø” Ìø” Ìø” Ìø™” Ìù” Ìù
+” Ìù” Ìù”  Ìù”! Ìù”, Ìù(”. Ìù*”/ Ìù+Ü ” Ìú” Ìú” Ìú” Ìú”  Ìú”! Ìú”' Ìú#”( Ìú$”) Ìú%”* Ìú&”, Ìú(”- Ìû”. Ìû”/ Ìû”4 Ìû”5 Ìû”Ì@ Ìû”ÌB Ìû”ÌC Ìû”ÌK Ìû$”ÌL Ìû%”ÌV Ìû/”ÌW Ìû0œ” Ìü” Ìü” Ìü” Ìü” Ìü”! Ìü”# Ìü”$ Ìü”, Ìü&”- Ìü'”7 Ìü1”8 Ìü2Ü ” Ìı” Ìı” Ìı” Ìı” Ìı” Ìı” Ìı” Ìı” Ìı”  Ìı”! Ìı”" Ìı”# Ìı”. Ìı(”0 Ìı*”1 Ìı+”9 Ìı3”: Ìı4”ÌD Ìı>”ÌE Ìı?”ÌF ÌıÌ@Ü ” Ìş” Ìş” Ìş” Ìş” Ìş” Ìş” Ìş” Ìş” Ìş” Ìş” Ìş” Ìş” Ìş”* Ìş$”, Ìş&”- Ìş'”5 Ìş/”6 Ìş0”Ì@ Ìş:”ÌA Ìş;”ÌB Ìş<”ÌC Ìÿ”ÌD Ìÿ’” Í ” Í ”” Í” Í” Í” Í!Ü ” Í” Í” Í” Í”  Í”! Í”' Í#”( Í$”) Í%”* Í&”, Í(”- Í)”. Í*”/ Í+”3 Í/”8 Í4”< Í8”= Í9”> Í:’” Í” Í”” Í” Í” Í” Í'Ü ” Í” Í” Í” Í”  Í”! Í”' Í#”( Í$”) Í%”* Í&”, Í(”- Í)”. Í*”/ Í+”5 Í1”: Í6”Ì@ Í<”ÌA Í=”ÌB Í>’” Í” Í’” Í
+” Í
+˜” Í” Í
+” Í” Í” Í”, Í(”. Í*”/ Í+›” Í” Í	” Í
+” Í” Í”# Í”$ Í ”0 Í,”1 Í-”7 Í3”8 Í4›” Í” Í	” Í
+” Í” Í”  Í”! Í”, Í(”- Í)”3 Í/”4 Í0›” Í” Í	” Í
+” Í” Í”" Í”# Í”0 Í,”1 Í-”7 Í3”8 Í4Ü ” Í” Í	” Í
+” Í” Í” Í” Í”+ Í'”, Í(”2 Í.”3 Í/”4 Í0”7 Í3”9 Í5”: Í6”< Í8”> Í:”? Í;”ÌB Í>”ÌE ÍÌA”ÌF ÍÌB”ÌG ÍÌC”ÌO ÍÌK”ÌQ ÍÌM”ÌR ÍÌN”ÌS ÍÌO”ÌT ÍÌP›” Í” Í	” Í
+” Í” Í”  Í”! Í”( Í$”) Í%”/ Í+”0 Í,Ü ” Í” Í	” Í
+” Í” Í” Í” Í”+ Í'”, Í(”2 Í.”3 Í/”4 Í0”5 Í1”7 Í3”8 Í4”9 Í5”: Í6”Ì@ Í<”ÌA Í=”ÌB Í>”ÌH ÍÌD”ÌI ÍÌEš” Í” Í	” Í
+” Í” Í”" Í”# Í”9 Í5”; Í7”< Í8”” Í” Í” Í” Í’” Í” Í’” Í
+” Í Ü ” Í” Í
+” Í” Í” Í” Í”' Í#”( Í$”. Í*”/ Í+”0 Í,”1 Í-”3 Í/”4 Í0”5 Í1”6 Í2”< Í8”? Í;”Ì@ Í<”ÌA Í=”ÌB Í>—” Í” Í” Í” Í” Í” Í” Í”” Í” Í#” Í$” Í%Ü ” Í” Í” Í” Í” Í” Í” Í”  Í”" Í”# Í”% Í!”' Í#”( Í$”+ Í'”. Í*”/ Í+”0 Í,”6 Í2”8 Í4”9 Í5”: Í6”= Í9”ÌB Í>”ÌC Í?”ÌI ÍÌE”ÌJ ÍÌF’” Í” Í‘” Í’”  Í ” Í””  Í ” Í” Í” Í‘” Í •” Í” Í” Í” Í”  Í•” Í ” Í ” Í ” Í ” Í •” Í!” Í!” Í!” Í!” Í!•” Í"” Í"” Í"” Í"” Í"•” Í#” Í#” Í#” Í#” Í#•” Í$” Í$” Í$” Í$” Í$•” Í%” Í%” Í%” Í%” Í%’” Í& ” Í&‘” Í&’”  Í( ”	 Í(	””  Í) ” Í)” Í)” Í)‘” Í) •” Í*” Í*	” Í*” Í*” Í*•” Í+” Í+” Í+” Í+”  Í+•” Í,” Í,” Í,” Í,” Í,•” Í-” Í-” Í-” Í-” Í-•” Í.” Í.
+” Í.” Í.” Í.’” Í/ ” Í/‘” Í/’”  Í1 ” Í1””  Í2 ” Í2” Í2” Í2–” Í3”
+ Í3” Í3	” Í3” Í3” Í3!’” Í4” Í4”” Í5” Í5” Í5” Í5’” Í6” Í6–” Í8”
+ Í8” Í8	” Í8” Í8” Í8"’” Í9” Í9”” Í:” Í:” Í:” Í:’” Í;” Í;–” Í=”
+ Í=” Í=	” Í=” Í=”  Í=&’” Í>” Í>”” Í?” Í?” Í?” Í?’” Í@” Í@–” ÍB”
+ ÍB” ÍB	” ÍB” ÍB”" ÍB(’” ÍC” ÍC›” ÍD” ÍD
+” ÍD” ÍD” ÍD” ÍD”# ÍD”$ ÍD ”) ÍD%”* ÍD&”+ ÍD'˜” ÍE” ÍE
+” ÍE” ÍE+” ÍE/”! ÍE2”# ÍE4”$ ÍE5—” ÍG” ÍG	” ÍG” ÍG” ÍG”  ÍG”" ÍG™” ÍH” ÍH” ÍH” ÍH” ÍH” ÍH”* ÍH$”, ÍH&”- ÍH'˜” ÍI” ÍI
+” ÍI” ÍI” ÍI” ÍI”  ÍI”" ÍIÜ ” ÍJ” ÍJ” ÍJ” ÍJ” ÍJ”# ÍJ”% ÍJ”& ÍJ”/ ÍJ'”0 ÍJ(”3 ÍJ+”4 ÍJ,”9 ÍJ1”: ÍJ2”> ÍJ6”? ÍJ7”Ì@ ÍJ8”ÌC ÍJ;”ÌD ÍJ<”ÌE ÍJ=”ÌF ÍJ>‘” ÍK‘”	 ÍL” ÍN” ÍN
+” ÍN” ÍN” ÍN” ÍN”! ÍN”" ÍN”+ ÍN'”, ÍN(”3 ÍN/”5 ÍN1”6 ÍN2Ü ” ÍO” ÍO” ÍO” ÍO” ÍO” ÍO” ÍO” ÍO” ÍO” ÍO” ÍO” ÍO” ÍO”  ÍO”# ÍO”$ ÍO”% ÍO”& ÍO ”' ÍO!”( ÍO"—” ÍP” ÍP” ÍP” ÍP” ÍP” ÍP” ÍP” ÍQ” ÍQ
+” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ”  ÍQ”! ÍQ”" ÍQ”” ÍS” ÍS” ÍS” ÍS’” ÍT” ÍT™” ÍV”
+ ÍV” ÍV	” ÍV” ÍV”" ÍV(”$ ÍV*”0 ÍV>”3 ÍVÌA˜” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW”' ÍW#”) ÍW%”” ÍX” ÍX” ÍX” ÍX‘”	 ÍY’” ÍZ” ÍZ” Í[” Í[” Í[” Í[”  Í[”! Í[”" Í[”$ Í[ ”- Í[)”. Í[*”1 Í[-”6 Í[2”7 Í[3’” Í\” Í\‘” Í]ÔrF–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ0‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
+ ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ‘”  ÌÎ ‘”  ÌÏ ‘”  ÌĞ ‘”  ÌÑ ‘”  ÌÒ ‘”  ÌÓ ‘”  ÌÔ ‘”  ÌÕ ‘”  ÌÖ ‘”  Ì× ‘”  ÌØ ‘”  ÌÙ ‘”  ÌÚ ‘”  ÌÛ ‘”  ÌÜ ‘”  Ìİ ‘”  ÌŞ ‘”  Ìß ‘”  Ìà ‘”  Ìá ‘”  Ìâ ‘”  Ìã ‘”  Ìä ‘”  Ìå ‘”  Ìæ ‘”  Ìç ‘”  Ìè ‘”  Ìé ‘”  Ìê ‘”  Ìë ‘”  Ìì ‘”  Ìí ‘”  Ìî ‘”  Ìï ‘”  Ìğ ‘”  Ìñ ‘”  Ìò ‘”  Ìó ‘”  Ìô ‘”  Ìõ ‘”  Ìö ‘”  Ì÷ ‘”  Ìø ‘”  Ìù ‘”  Ìú ‘”  Ìû ‘”  Ìü ‘”  Ìı ‘”  Ìş ‘”  Ìÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ‘”  Í/ ÔrG’§missing¦pluginÃ¦genAbcÂÔ  ÔrH”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache˜ÔrI–¤type¥start£end«declarationªspecifiers¦source¶ExportNamedDeclaration#ÔrJ•¤type¥start£end¬declarations¤kind³VariableDeclaration#‘ÔrK•¤type¥start£end¢id¤init²VariableDeclarator"ÔrL”¤type¥start£end¤nameªIdentifier"¬MaterialTypeÀ£varÀI¶ExportNamedDeclarationÍ<ÍVJ³VariableDeclarationÍCÍV‘K²VariableDeclaratorÍGÍULªIdentifierÍGÍU®MaterialSourceÀ£varÀI¶ExportNamedDeclarationÍUÍ_ÔrM–¤type¥start£end¢idªsuperClass¤body°ClassDeclarationÍ\Í_LªIdentifierÍbÍr°LearningMaterialÀÔrN”¤type¥start£end¤body©ClassBodyÍsÍ_•ÔrO˜¤type¥start£end¦static¨computed£key¤kind¥value°MethodDefinitionÍzÍÛÂÂLªIdentifierÍzÍ…«constructor«constructorÔrP™¤type¥start£end¢idªexpression©generator¥async¦params¤body²FunctionExpressionÍ…ÍÛÀÂÂÂN®BlockStatementÍˆÍÛÜ ÔrQ”¤type¥start£endªexpression³ExpressionStatementÍ“Í ÔrR–¤type¥start£end¨operator¤left¥right´AssignmentExpressionÍ“ÍŸ¡=ÔrS—¤type¥start£end¦object¨property¨computed¨optional°MemberExpressionÍ“ÍšÔrT“¤type¥start£end®ThisExpressionÍ“Í—LªIdentifierÍ˜Íš¢idÂÂÔrU•¤type¥start£end¥value£raw§LiteralÍÍŸ ¢''Q³ExpressionStatementÍªÍºR´AssignmentExpressionÍªÍ¹¡=S°MemberExpressionÍªÍ´T®ThisExpressionÍªÍ®LªIdentifierÍ¯Í´¥titleÂÂU§LiteralÍ·Í¹ ¢''Q³ExpressionStatementÍÄÍáR´AssignmentExpressionÍÄÍà¡=S°MemberExpressionÍÄÍÍT®ThisExpressionÍÄÍÈLªIdentifierÍÉÍÍ¤typeÂÂS°MemberExpressionÍĞÍàLªIdentifierÍĞÍÜ¬MaterialTypeLªIdentifierÍİÍà£PDFÂÂQ³ExpressionStatementÍëÍR´AssignmentExpressionÍëÍ¡=S°MemberExpressionÍëÍöT®ThisExpressionÍëÍïLªIdentifierÍğÍö¦sourceÂÂS°MemberExpressionÍùÍLªIdentifierÍùÍ®MaterialSourceLªIdentifierÍÍ«USER_UPLOADÂÂQ³ExpressionStatementÍÍ0R´AssignmentExpressionÍÍ/¡=S°MemberExpressionÍÍ*T®ThisExpressionÍÍ"LªIdentifierÍ#Í*§contentÂÂU§LiteralÍ-Í/ ¢''Q³ExpressionStatementÍ:ÍLR´AssignmentExpressionÍ:ÍK¡=S°MemberExpressionÍ:ÍFT®ThisExpressionÍ:Í>LªIdentifierÍ?ÍF§summaryÂÂU§LiteralÍIÍK ¢''Q³ExpressionStatementÍVÍiR´AssignmentExpressionÍVÍh¡=S°MemberExpressionÍVÍcT®ThisExpressionÍVÍZLªIdentifierÍ[Íc¨keywordsÂÂÔrV”¤type¥start£end¨elements¯ArrayExpressionÍfÍhQ³ExpressionStatementÍsÍ†R´AssignmentExpressionÍsÍ…¡=S°MemberExpressionÍsÍ€T®ThisExpressionÍsÍwLªIdentifierÍxÍ€¨courseIdÂÂU§LiteralÍƒÍ… ¢''Q³ExpressionStatementÍÍ¥R´AssignmentExpressionÍÍ¤¡=S°MemberExpressionÍÍŸT®ThisExpressionÍÍ”LªIdentifierÍ•ÍŸªmodulePathÂÂU§LiteralÍ¢Í¤ ¢''Q³ExpressionStatementÍ¼ÍÊR´AssignmentExpressionÍ¼ÍÉ¡=S°MemberExpressionÍ¼ÍÄT®ThisExpressionÍ¼ÍÀLªIdentifierÍÁÍÄ£urlÂÂU§LiteralÍÇÍÉ ¢''Q³ExpressionStatementÍäÍ÷R´AssignmentExpressionÍäÍö¡=S°MemberExpressionÍäÍñT®ThisExpressionÍäÍèLªIdentifierÍéÍñ¨filePathÂÂU§LiteralÍôÍö ¢''Q³ExpressionStatementÍÍR´AssignmentExpressionÍÍ¡=S°MemberExpressionÍÍT®ThisExpressionÍÍLªIdentifierÍÍ¨fileSizeÂÂU§LiteralÍÍ ¡0Q³ExpressionStatementÍ'Í:R´AssignmentExpressionÍ'Í9¡=S°MemberExpressionÍ'Í5T®ThisExpressionÍ'Í+LªIdentifierÍ,Í5©createdAtÂÂU§LiteralÍ8Í9 ¡0Q³ExpressionStatementÍDÍWR´AssignmentExpressionÍDÍV¡=S°MemberExpressionÍDÍRT®ThisExpressionÍDÍHLªIdentifierÍIÍR©updatedAtÂÂU§LiteralÍUÍV ¡0Q³ExpressionStatementÍaÍuR´AssignmentExpressionÍaÍt¡=S°MemberExpressionÍaÍlT®ThisExpressionÍaÍeLªIdentifierÍfÍl¦isReadÂÂU§LiteralÍoÍtÂ¥falseQ³ExpressionStatementÍÍ•R´AssignmentExpressionÍÍ”¡=S°MemberExpressionÍÍT®ThisExpressionÍÍƒLªIdentifierÍ„Í¬readProgressÂÂU§LiteralÍ“Í” ¡0Q³ExpressionStatementÍŸÍ¯R´AssignmentExpressionÍŸÍ®¡=S°MemberExpressionÍŸÍªT®ThisExpressionÍŸÍ£LªIdentifierÍ¤Íª¦ratingÂÂU§LiteralÍ­Í® ¡0Q³ExpressionStatementÍÅÍÔR´AssignmentExpressionÍÅÍÓ¡=S°MemberExpressionÍÅÍÎT®ThisExpressionÍÅÍÉLªIdentifierÍÊÍÎ¤tagsÂÂV¯ArrayExpressionÍÑÍÓO°MethodDefinitionÍáÍXÃÂLªIdentifierÍèÍòªgenerateId¦methodP²FunctionExpressionÍòÍXÀÂÂÂN®BlockStatementÍõÍX‘ÔrW”¤type¥start£end¨argument¯ReturnStatementÍ ÍQÔrX–¤type¥start£end¤left¨operator¥right°BinaryExpressionÍÍPX°BinaryExpressionÍÍ'U§LiteralÍÍ¤mat_¦'mat_'¡+ÔrY–¤type¥start£end¦callee©arguments¨optional®CallExpressionÍÍ'S°MemberExpressionÍÍ#Y®CallExpressionÍÍS°MemberExpressionÍÍLªIdentifierÍÍ¤DateLªIdentifierÍÍ£nowÂÂÂLªIdentifierÍÍ#¨toStringÂÂ‘U§LiteralÍ$Í&$¢36Â¡+Y®CallExpressionÍ*ÍPS°MemberExpressionÍ*ÍJY®CallExpressionÍ*ÍDS°MemberExpressionÍ*Í@Y®CallExpressionÍ*Í7S°MemberExpressionÍ*Í5LªIdentifierÍ*Í.¤MathLªIdentifierÍ/Í5¦randomÂÂÂLªIdentifierÍ8Í@¨toStringÂÂ‘U§LiteralÍAÍC$¢36ÂLªIdentifierÍEÍJ¥sliceÂÂ’U§LiteralÍKÍL¡2U§LiteralÍNÍO¡8ÂO°MethodDefinitionÍ^Í7ÃÂLªIdentifierÍeÍu°createFromUpload¦methodP²FunctionExpressionÍuÍ7ÀÂÂÂ”LªIdentifierÍvÍ{¥titleLªIdentifierÍ}Í¤typeLªIdentifierÍƒÍŠ§contentLªIdentifierÍŒÍ”¨courseIdN®BlockStatementÍ–Í7šJ³VariableDeclarationÍ¡ÍÉ‘K²VariableDeclaratorÍ§ÍÈLªIdentifierÍ§Í¯¨materialÔrZ•¤type¥start£end¦callee©arguments­NewExpressionÍ²ÍÈLªIdentifierÍ¶ÍÆ°LearningMaterial¥constQ³ExpressionStatementÍÓÍÿR´AssignmentExpressionÍÓÍş¡=S°MemberExpressionÍÓÍŞLªIdentifierÍÓÍÛ¨materialLªIdentifierÍÜÍŞ¢idÂÂY®CallExpressionÍáÍşS°MemberExpressionÍáÍüLªIdentifierÍáÍñ°LearningMaterialLªIdentifierÍòÍüªgenerateIdÂÂÂQ³ExpressionStatementÍ	Í R´AssignmentExpressionÍ	Í¡=S°MemberExpressionÍ	ÍLªIdentifierÍ	Í¨materialLªIdentifierÍÍ¥titleÂÂLªIdentifierÍÍ¥titleQ³ExpressionStatementÍ*Í?R´AssignmentExpressionÍ*Í>¡=S°MemberExpressionÍ*Í7LªIdentifierÍ*Í2¨materialLªIdentifierÍ3Í7¤typeÂÂLªIdentifierÍ:Í>¤typeQ³ExpressionStatementÍIÍvR´AssignmentExpressionÍIÍu¡=S°MemberExpressionÍIÍXLªIdentifierÍIÍQ¨materialLªIdentifierÍRÍX¦sourceÂÂS°MemberExpressionÍ[ÍuLªIdentifierÍ[Íi®MaterialSourceLªIdentifierÍjÍu«USER_UPLOADÂÂQ³ExpressionStatementÍ€Í›R´AssignmentExpressionÍ€Íš¡=S°MemberExpressionÍ€ÍLªIdentifierÍ€Íˆ¨materialLªIdentifierÍ‰Í§contentÂÂLªIdentifierÍ“Íš§contentQ³ExpressionStatementÍ¥ÍÂR´AssignmentExpressionÍ¥ÍÁ¡=S°MemberExpressionÍ¥Í¶LªIdentifierÍ¥Í­¨materialLªIdentifierÍ®Í¶¨courseIdÂÂLªIdentifierÍ¹ÍÁ¨courseIdQ³ExpressionStatementÍÌÍìR´AssignmentExpressionÍÌÍë¡=S°MemberExpressionÍÌÍŞLªIdentifierÍÌÍÔ¨materialLªIdentifierÍÕÍŞ©createdAtÂÂY®CallExpressionÍáÍëS°MemberExpressionÍáÍéLªIdentifierÍáÍå¤DateLªIdentifierÍæÍé£nowÂÂÂQ³ExpressionStatementÍöÍR´AssignmentExpressionÍöÍ¡=S°MemberExpressionÍöÍLªIdentifierÍöÍş¨materialLªIdentifierÍÿÍ©updatedAtÂÂY®CallExpressionÍÍS°MemberExpressionÍÍLªIdentifierÍÍ¤DateLªIdentifierÍÍ£nowÂÂÂW¯ReturnStatementÍ Í0LªIdentifierÍ'Í/¨materialO°MethodDefinitionÍ=Í	YÃÂLªIdentifierÍDÍP¬createFromAI¦methodP²FunctionExpressionÍPÍ	YÀÂÂÂ”LªIdentifierÍQÍV¥titleLªIdentifierÍXÍ_§contentLªIdentifierÍaÍi¨courseIdÔr[•¤type¥start£end¤left¥right±AssignmentPatternÍkÍxLªIdentifierÍkÍs¨keywordsV¯ArrayExpressionÍvÍxN®BlockStatementÍzÍ	Y›J³VariableDeclarationÍ…Í­‘K²VariableDeclaratorÍ‹Í¬LªIdentifierÍ‹Í“¨materialZ­NewExpressionÍ–Í¬LªIdentifierÍšÍª°LearningMaterial¥constQ³ExpressionStatementÍ·ÍãR´AssignmentExpressionÍ·Íâ¡=S°MemberExpressionÍ·ÍÂLªIdentifierÍ·Í¿¨materialLªIdentifierÍÀÍÂ¢idÂÂY®CallExpressionÍÅÍâS°MemberExpressionÍÅÍàLªIdentifierÍÅÍÕ°LearningMaterialLªIdentifierÍÖÍàªgenerateIdÂÂÂQ³ExpressionStatementÍíÍR´AssignmentExpressionÍíÍ¡=S°MemberExpressionÍíÍûLªIdentifierÍíÍõ¨materialLªIdentifierÍöÍû¥titleÂÂLªIdentifierÍşÍ¥titleQ³ExpressionStatementÍÍ8R´AssignmentExpressionÍÍ7¡=S°MemberExpressionÍÍLªIdentifierÍÍ¨materialLªIdentifierÍÍ¤typeÂÂS°MemberExpressionÍÍ7LªIdentifierÍÍ*¬MaterialTypeLªIdentifierÍ+Í7¬AI_GENERATEDÂÂQ³ExpressionStatementÍBÍqR´AssignmentExpressionÍBÍp¡=S°MemberExpressionÍBÍQLªIdentifierÍBÍJ¨materialLªIdentifierÍKÍQ¦sourceÂÂS°MemberExpressionÍTÍpLªIdentifierÍTÍb®MaterialSourceLªIdentifierÍcÍp­AI_SUPPLEMENTÂÂQ³ExpressionStatementÍ{Í–R´AssignmentExpressionÍ{Í•¡=S°MemberExpressionÍ{Í‹LªIdentifierÍ{Íƒ¨materialLªIdentifierÍ„Í‹§contentÂÂLªIdentifierÍÍ•§contentQ³ExpressionStatementÍ Í½R´AssignmentExpressionÍ Í¼¡=S°MemberExpressionÍ Í±LªIdentifierÍ Í¨¨materialLªIdentifierÍ©Í±¨courseIdÂÂLªIdentifierÍ´Í¼¨courseIdQ³ExpressionStatementÍÇÍäR´AssignmentExpressionÍÇÍã¡=S°MemberExpressionÍÇÍØLªIdentifierÍÇÍÏ¨materialLªIdentifierÍĞÍØ¨keywordsÂÂLªIdentifierÍÛÍã¨keywordsQ³ExpressionStatementÍîÍ	R´AssignmentExpressionÍîÍ	¡=S°MemberExpressionÍîÍ	 LªIdentifierÍîÍö¨materialLªIdentifierÍ÷Í	 ©createdAtÂÂY®CallExpressionÍ	Í	S°MemberExpressionÍ	Í	LªIdentifierÍ	Í	¤DateLªIdentifierÍ	Í	£nowÂÂÂQ³ExpressionStatementÍ	Í	8R´AssignmentExpressionÍ	Í	7¡=S°MemberExpressionÍ	Í	*LªIdentifierÍ	Í	 ¨materialLªIdentifierÍ	!Í	*©updatedAtÂÂY®CallExpressionÍ	-Í	7S°MemberExpressionÍ	-Í	5LªIdentifierÍ	-Í	1¤DateLªIdentifierÍ	2Í	5£nowÂÂÂW¯ReturnStatementÍ	BÍ	RLªIdentifierÍ	IÍ	Q¨materialO°MethodDefinitionÍ	_Í\ÃÂLªIdentifierÍ	fÍ	s­createFromWeb¦methodP²FunctionExpressionÍ	sÍ\ÀÂÂÂ”LªIdentifierÍ	tÍ	y¥titleLªIdentifierÍ	{Í	~£urlLªIdentifierÍ	€Í	‡§contentLªIdentifierÍ	‰Í	‘¨courseIdN®BlockStatementÍ	“Í\›J³VariableDeclarationÍ	Í	Æ‘K²VariableDeclaratorÍ	¤Í	ÅLªIdentifierÍ	¤Í	¬¨materialZ­NewExpressionÍ	¯Í	ÅLªIdentifierÍ	³Í	Ã°LearningMaterial¥constQ³ExpressionStatementÍ	ĞÍ	üR´AssignmentExpressionÍ	ĞÍ	û¡=S°MemberExpressionÍ	ĞÍ	ÛLªIdentifierÍ	ĞÍ	Ø¨materialLªIdentifierÍ	ÙÍ	Û¢idÂÂY®CallExpressionÍ	ŞÍ	ûS°MemberExpressionÍ	ŞÍ	ùLªIdentifierÍ	ŞÍ	î°LearningMaterialLªIdentifierÍ	ïÍ	ùªgenerateIdÂÂÂQ³ExpressionStatementÍ
+Í
+R´AssignmentExpressionÍ
+Í
+¡=S°MemberExpressionÍ
+Í
+LªIdentifierÍ
+Í
+¨materialLªIdentifierÍ
+Í
+¥titleÂÂLªIdentifierÍ
+Í
+¥titleQ³ExpressionStatementÍ
+'Í
+HR´AssignmentExpressionÍ
+'Í
+G¡=S°MemberExpressionÍ
+'Í
+4LªIdentifierÍ
+'Í
+/¨materialLªIdentifierÍ
+0Í
+4¤typeÂÂS°MemberExpressionÍ
+7Í
+GLªIdentifierÍ
+7Í
+C¬MaterialTypeLªIdentifierÍ
+DÍ
+G£WEBÂÂQ³ExpressionStatementÍ
+RÍ
+~R´AssignmentExpressionÍ
+RÍ
+}¡=S°MemberExpressionÍ
+RÍ
+aLªIdentifierÍ
+RÍ
+Z¨materialLªIdentifierÍ
+[Í
+a¦sourceÂÂS°MemberExpressionÍ
+dÍ
+}LªIdentifierÍ
+dÍ
+r®MaterialSourceLªIdentifierÍ
+sÍ
+}ªWEB_SEARCHÂÂQ³ExpressionStatementÍ
+ˆÍ
+›R´AssignmentExpressionÍ
+ˆÍ
+š¡=S°MemberExpressionÍ
+ˆÍ
+”LªIdentifierÍ
+ˆÍ
+¨materialLªIdentifierÍ
+‘Í
+”£urlÂÂLªIdentifierÍ
+—Í
+š£urlQ³ExpressionStatementÍ
+¥Í
+ÀR´AssignmentExpressionÍ
+¥Í
+¿¡=S°MemberExpressionÍ
+¥Í
+µLªIdentifierÍ
+¥Í
+­¨materialLªIdentifierÍ
+®Í
+µ§contentÂÂLªIdentifierÍ
+¸Í
+¿§contentQ³ExpressionStatementÍ
+ÊÍ
+çR´AssignmentExpressionÍ
+ÊÍ
+æ¡=S°MemberExpressionÍ
+ÊÍ
+ÛLªIdentifierÍ
+ÊÍ
+Ò¨materialLªIdentifierÍ
+ÓÍ
+Û¨courseIdÂÂLªIdentifierÍ
+ŞÍ
+æ¨courseIdQ³ExpressionStatementÍ
+ñÍR´AssignmentExpressionÍ
+ñÍ¡=S°MemberExpressionÍ
+ñÍLªIdentifierÍ
+ñÍ
+ù¨materialLªIdentifierÍ
+úÍ©createdAtÂÂY®CallExpressionÍÍS°MemberExpressionÍÍLªIdentifierÍÍ
+¤DateLªIdentifierÍÍ£nowÂÂÂQ³ExpressionStatementÍÍ;R´AssignmentExpressionÍÍ:¡=S°MemberExpressionÍÍ-LªIdentifierÍÍ#¨materialLªIdentifierÍ$Í-©updatedAtÂÂY®CallExpressionÍ0Í:S°MemberExpressionÍ0Í8LªIdentifierÍ0Í4¤DateLªIdentifierÍ5Í8£nowÂÂÂW¯ReturnStatementÍEÍULªIdentifierÍLÍT¨materialÀI¶ExportNamedDeclarationÍkÍEM°ClassDeclarationÍrÍELªIdentifierÍxÍ‡¯KnowledgeModuleÀN©ClassBodyÍˆÍE—O°MethodDefinitionÍÍ®ÂÂLªIdentifierÍÍš«constructor«constructorP²FunctionExpressionÍšÍ®ÀÂÂÂN®BlockStatementÍÍ®™Q³ExpressionStatementÍ¨ÍµR´AssignmentExpressionÍ¨Í´¡=S°MemberExpressionÍ¨Í¯T®ThisExpressionÍ¨Í¬LªIdentifierÍ­Í¯¢idÂÂU§LiteralÍ²Í´ ¢''Q³ExpressionStatementÍ¿ÍÎR´AssignmentExpressionÍ¿ÍÍ¡=S°MemberExpressionÍ¿ÍÈT®ThisExpressionÍ¿ÍÃLªIdentifierÍÄÍÈ¤nameÂÂU§LiteralÍËÍÍ ¢''Q³ExpressionStatementÍØÍîR´AssignmentExpressionÍØÍí¡=S°MemberExpressionÍØÍèT®ThisExpressionÍØÍÜLªIdentifierÍİÍè«descriptionÂÂU§LiteralÍëÍí ¢''Q³ExpressionStatementÍøÍR´AssignmentExpressionÍøÍ
+¡=S°MemberExpressionÍøÍT®ThisExpressionÍøÍüLªIdentifierÍıÍ¨courseIdÂÂU§LiteralÍÍ
+ ¢''Q³ExpressionStatementÍÍ)R´AssignmentExpressionÍÍ(¡=S°MemberExpressionÍÍ#T®ThisExpressionÍÍLªIdentifierÍÍ#©materialsÂÂV¯ArrayExpressionÍ&Í(Q³ExpressionStatementÍ3ÍLR´AssignmentExpressionÍ3ÍK¡=S°MemberExpressionÍ3ÍFT®ThisExpressionÍ3Í7LªIdentifierÍ8ÍF®parentModuleIdÂÂU§LiteralÍIÍK ¢''Q³ExpressionStatementÍVÍmR´AssignmentExpressionÍVÍl¡=S°MemberExpressionÍVÍgT®ThisExpressionÍVÍZLªIdentifierÍ[Íg¬childModulesÂÂV¯ArrayExpressionÍjÍlQ³ExpressionStatementÍwÍŠR´AssignmentExpressionÍwÍ‰¡=S°MemberExpressionÍwÍ„T®ThisExpressionÍwÍ{LªIdentifierÍ|Í„¨keywordsÂÂV¯ArrayExpressionÍ‡Í‰Q³ExpressionStatementÍ”Í§R´AssignmentExpressionÍ”Í¦¡=S°MemberExpressionÍ”Í¢T®ThisExpressionÍ”Í˜LªIdentifierÍ™Í¢©createdAtÂÂU§LiteralÍ¥Í¦ ¡0O°MethodDefinitionÍ´Í+ÃÂLªIdentifierÍ»ÍÅªgenerateId¦methodP²FunctionExpressionÍÅÍ+ÀÂÂÂN®BlockStatementÍÈÍ+‘W¯ReturnStatementÍÓÍ$X°BinaryExpressionÍÚÍ#X°BinaryExpressionÍÚÍúU§LiteralÍÚÍà¤mod_¦'mod_'¡+Y®CallExpressionÍãÍúS°MemberExpressionÍãÍöY®CallExpressionÍãÍíS°MemberExpressionÍãÍëLªIdentifierÍãÍç¤DateLªIdentifierÍèÍë£nowÂÂÂLªIdentifierÍîÍö¨toStringÂÂ‘U§LiteralÍ÷Íù$¢36Â¡+Y®CallExpressionÍıÍ#S°MemberExpressionÍıÍY®CallExpressionÍıÍS°MemberExpressionÍıÍY®CallExpressionÍıÍ
+S°MemberExpressionÍıÍLªIdentifierÍıÍ¤MathLªIdentifierÍÍ¦randomÂÂÂLªIdentifierÍÍ¨toStringÂÂ‘U§LiteralÍÍ$¢36ÂLªIdentifierÍÍ¥sliceÂÂ’U§LiteralÍÍ¡2U§LiteralÍ!Í"¡8ÂO°MethodDefinitionÍ1Í­ÃÂLªIdentifierÍ8Í>¦create¦methodP²FunctionExpressionÍ>Í­ÀÂÂÂ”LªIdentifierÍ?ÍC¤nameLªIdentifierÍEÍP«descriptionLªIdentifierÍRÍZ¨courseId[±AssignmentPatternÍ\ÍiLªIdentifierÍ\Íd¨parentIdU§LiteralÍgÍi ¢''N®BlockStatementÍkÍ­˜J³VariableDeclarationÍvÍ›‘K²VariableDeclaratorÍ|ÍšLªIdentifierÍ|Í‚¦moduleZ­NewExpressionÍ…ÍšLªIdentifierÍ‰Í˜¯KnowledgeModule¥constQ³ExpressionStatementÍ¥ÍÎR´AssignmentExpressionÍ¥ÍÍ¡=S°MemberExpressionÍ¥Í®LªIdentifierÍ¥Í«¦moduleLªIdentifierÍ¬Í®¢idÂÂY®CallExpressionÍ±ÍÍS°MemberExpressionÍ±ÍËLªIdentifierÍ±ÍÀ¯KnowledgeModuleLªIdentifierÍÁÍËªgenerateIdÂÂÂQ³ExpressionStatementÍØÍëR´AssignmentExpressionÍØÍê¡=S°MemberExpressionÍØÍãLªIdentifierÍØÍŞ¦moduleLªIdentifierÍßÍã¤nameÂÂLªIdentifierÍæÍê¤nameQ³ExpressionStatementÍõÍR´AssignmentExpressionÍõÍ¡=S°MemberExpressionÍõÍLªIdentifierÍõÍû¦moduleLªIdentifierÍüÍ«descriptionÂÂLªIdentifierÍ
+Í«descriptionQ³ExpressionStatementÍ Í;R´AssignmentExpressionÍ Í:¡=S°MemberExpressionÍ Í/LªIdentifierÍ Í&¦moduleLªIdentifierÍ'Í/¨courseIdÂÂLªIdentifierÍ2Í:¨courseIdQ³ExpressionStatementÍEÍfR´AssignmentExpressionÍEÍe¡=S°MemberExpressionÍEÍZLªIdentifierÍEÍK¦moduleLªIdentifierÍLÍZ®parentModuleIdÂÂLªIdentifierÍ]Íe¨parentIdQ³ExpressionStatementÍpÍR´AssignmentExpressionÍpÍ¡=S°MemberExpressionÍpÍ€LªIdentifierÍpÍv¦moduleLªIdentifierÍwÍ€©createdAtÂÂY®CallExpressionÍƒÍS°MemberExpressionÍƒÍ‹LªIdentifierÍƒÍ‡¤DateLªIdentifierÍˆÍ‹£nowÂÂÂW¯ReturnStatementÍ˜Í¦LªIdentifierÍŸÍ¥¦moduleO°MethodDefinitionÍ³Í!ÂÂLªIdentifierÍ³Í¾«addMaterial¦methodP²FunctionExpressionÍ¾Í!ÀÂÂÂ‘LªIdentifierÍ¿ÍÇ¨materialN®BlockStatementÍÉÍ!’Q³ExpressionStatementÍÔÍòR´AssignmentExpressionÍÔÍñ¡=S°MemberExpressionÍÔÍçLªIdentifierÍÔÍÜ¨materialLªIdentifierÍİÍçªmodulePathÂÂS°MemberExpressionÍêÍñT®ThisExpressionÍêÍîLªIdentifierÍïÍñ¢idÂÂQ³ExpressionStatementÍüÍY®CallExpressionÍüÍS°MemberExpressionÍüÍS°MemberExpressionÍüÍ
+T®ThisExpressionÍüÍ LªIdentifierÍÍ
+©materialsÂÂLªIdentifierÍÍ¤pushÂÂ‘LªIdentifierÍÍ¨materialÂO°MethodDefinitionÍ'Í•ÂÂLªIdentifierÍ'Í5®removeMaterial¦methodP²FunctionExpressionÍ5Í•ÀÂÂÂ‘LªIdentifierÍ6Í@ªmaterialIdN®BlockStatementÍBÍ•‘Q³ExpressionStatementÍMÍR´AssignmentExpressionÍMÍ¡=S°MemberExpressionÍMÍ[T®ThisExpressionÍMÍQLªIdentifierÍRÍ[©materialsÂÂY®CallExpressionÍ^ÍS°MemberExpressionÍ^ÍsS°MemberExpressionÍ^ÍlT®ThisExpressionÍ^ÍbLªIdentifierÍcÍl©materialsÂÂLªIdentifierÍmÍs¦filterÂÂ‘P·ArrowFunctionExpressionÍtÍŒÀÃÂÂ‘LªIdentifierÍtÍu¡mX°BinaryExpressionÍyÍŒS°MemberExpressionÍyÍ}LªIdentifierÍyÍz¡mLªIdentifierÍ{Í}¢idÂÂ£!==LªIdentifierÍ‚ÍŒªmaterialIdÂO°MethodDefinitionÍ›ÍİÂÂLªIdentifierÍ›Í«°getMaterialCount¦methodP²FunctionExpressionÍ«ÍİÀÂÂÂN®BlockStatementÍ®Íİ‘W¯ReturnStatementÍ¹ÍÖS°MemberExpressionÍÀÍÕS°MemberExpressionÍÀÍÎT®ThisExpressionÍÀÍÄLªIdentifierÍÅÍÎ©materialsÂÂLªIdentifierÍÏÍÕ¦lengthÂÂO°MethodDefinitionÍãÍBÂÂLªIdentifierÍãÍï¬getTotalSize¦methodP²FunctionExpressionÍïÍBÀÂÂÂN®BlockStatementÍòÍB‘W¯ReturnStatementÍıÍ;Y®CallExpressionÍÍ:S°MemberExpressionÍÍS°MemberExpressionÍÍT®ThisExpressionÍÍLªIdentifierÍ	Í©materialsÂÂLªIdentifierÍÍ¦reduceÂÂ’P·ArrowFunctionExpressionÍÍ6ÀÃÂÂ’LªIdentifierÍÍ£sumLªIdentifierÍ Í!¡mX°BinaryExpressionÍ&Í6LªIdentifierÍ&Í)£sum¡+S°MemberExpressionÍ,Í6LªIdentifierÍ,Í-¡mLªIdentifierÍ.Í6¨fileSizeÂÂU§LiteralÍ8Í9 ¡0ÂÀI¶ExportNamedDeclarationÍQÍ!#M°ClassDeclarationÍXÍ!#LªIdentifierÍ^Ít¶CompositeKnowledgeBaseÀN©ClassBodyÍuÍ!#ŸO°MethodDefinitionÍ|ÍŸÂÂLªIdentifierÍ|Í‡«constructor«constructorP²FunctionExpressionÍ‡ÍŸÀÂÂÂN®BlockStatementÍŠÍŸ™Q³ExpressionStatementÍ•Í¢R´AssignmentExpressionÍ•Í¡¡=S°MemberExpressionÍ•ÍœT®ThisExpressionÍ•Í™LªIdentifierÍšÍœ¢idÂÂU§LiteralÍŸÍ¡ ¢''Q³ExpressionStatementÍ¬Í¿R´AssignmentExpressionÍ¬Í¾¡=S°MemberExpressionÍ¬Í¹T®ThisExpressionÍ¬Í°LªIdentifierÍ±Í¹¨courseIdÂÂU§LiteralÍ¼Í¾ ¢''Q³ExpressionStatementÍÉÍßR´AssignmentExpressionÍÉÍŞ¡=S°MemberExpressionÍÉÍÙT®ThisExpressionÍÉÍÍLªIdentifierÍÎÍÙ«courseTitleÂÂU§LiteralÍÜÍŞ ¢''Q³ExpressionStatementÍéÍûR´AssignmentExpressionÍéÍú¡=S°MemberExpressionÍéÍõT®ThisExpressionÍéÍíLªIdentifierÍîÍõ§modulesÂÂV¯ArrayExpressionÍøÍúQ³ExpressionStatementÍÍR´AssignmentExpressionÍÍ¡=S°MemberExpressionÍÍT®ThisExpressionÍÍ	LªIdentifierÍ
+Í¬allMaterialsÂÂV¯ArrayExpressionÍÍQ³ExpressionStatementÍ&Í<R´AssignmentExpressionÍ&Í;¡=S°MemberExpressionÍ&Í6T®ThisExpressionÍ&Í*LªIdentifierÍ+Í6«aiMaterialsÂÂV¯ArrayExpressionÍ9Í;Q³ExpressionStatementÍFÍ^R´AssignmentExpressionÍFÍ]¡=S°MemberExpressionÍFÍXT®ThisExpressionÍFÍJLªIdentifierÍKÍX­userMaterialsÂÂV¯ArrayExpressionÍ[Í]Q³ExpressionStatementÍhÍ{R´AssignmentExpressionÍhÍz¡=S°MemberExpressionÍhÍvT®ThisExpressionÍhÍlLªIdentifierÍmÍv©createdAtÂÂU§LiteralÍyÍz ¡0Q³ExpressionStatementÍ…Í˜R´AssignmentExpressionÍ…Í—¡=S°MemberExpressionÍ…Í“T®ThisExpressionÍ…Í‰LªIdentifierÍŠÍ“©updatedAtÂÂU§LiteralÍ–Í— ¡0O°MethodDefinitionÍ¥ÍÃÂLªIdentifierÍ¬Í¶ªgenerateId¦methodP²FunctionExpressionÍ¶ÍÀÂÂÂN®BlockStatementÍ¹Í‘W¯ReturnStatementÍÄÍX°BinaryExpressionÍËÍX°BinaryExpressionÍËÍêU§LiteralÍËÍĞ£kb_¥'kb_'¡+Y®CallExpressionÍÓÍêS°MemberExpressionÍÓÍæY®CallExpressionÍÓÍİS°MemberExpressionÍÓÍÛLªIdentifierÍÓÍ×¤DateLªIdentifierÍØÍÛ£nowÂÂÂLªIdentifierÍŞÍæ¨toStringÂÂ‘U§LiteralÍçÍé$¢36Â¡+Y®CallExpressionÍíÍS°MemberExpressionÍíÍY®CallExpressionÍíÍS°MemberExpressionÍíÍY®CallExpressionÍíÍúS°MemberExpressionÍíÍøLªIdentifierÍíÍñ¤MathLªIdentifierÍòÍø¦randomÂÂÂLªIdentifierÍûÍ¨toStringÂÂ‘U§LiteralÍÍ$¢36ÂLªIdentifierÍÍ¥sliceÂÂ’U§LiteralÍÍ¡2U§LiteralÍÍ¡8ÂO°MethodDefinitionÍ!ÍZÃÂLªIdentifierÍ(Í.¦create¦methodP²FunctionExpressionÍ.ÍZÀÂÂÂ’LªIdentifierÍ/Í7¨courseIdLªIdentifierÍ9ÍD«courseTitleN®BlockStatementÍFÍZ—J³VariableDeclarationÍQÍy‘K²VariableDeclaratorÍWÍxLªIdentifierÍWÍY¢kbZ­NewExpressionÍ\ÍxLªIdentifierÍ`Ív¶CompositeKnowledgeBase¥constQ³ExpressionStatementÍƒÍ¯R´AssignmentExpressionÍƒÍ®¡=S°MemberExpressionÍƒÍˆLªIdentifierÍƒÍ…¢kbLªIdentifierÍ†Íˆ¢idÂÂY®CallExpressionÍ‹Í®S°MemberExpressionÍ‹Í¬LªIdentifierÍ‹Í¡¶CompositeKnowledgeBaseLªIdentifierÍ¢Í¬ªgenerateIdÂÂÂQ³ExpressionStatementÍ¹ÍĞR´AssignmentExpressionÍ¹ÍÏ¡=S°MemberExpressionÍ¹ÍÄLªIdentifierÍ¹Í»¢kbLªIdentifierÍ¼ÍÄ¨courseIdÂÂLªIdentifierÍÇÍÏ¨courseIdQ³ExpressionStatementÍÚÍ÷R´AssignmentExpressionÍÚÍö¡=S°MemberExpressionÍÚÍèLªIdentifierÍÚÍÜ¢kbLªIdentifierÍİÍè«courseTitleÂÂLªIdentifierÍëÍö«courseTitleQ³ExpressionStatementÍÍR´AssignmentExpressionÍÍ¡=S°MemberExpressionÍÍLªIdentifierÍÍ¢kbLªIdentifierÍÍ©createdAtÂÂY®CallExpressionÍÍS°MemberExpressionÍÍLªIdentifierÍÍ¤DateLªIdentifierÍÍ£nowÂÂÂQ³ExpressionStatementÍ%Í?R´AssignmentExpressionÍ%Í>¡=S°MemberExpressionÍ%Í1LªIdentifierÍ%Í'¢kbLªIdentifierÍ(Í1©updatedAtÂÂY®CallExpressionÍ4Í>S°MemberExpressionÍ4Í<LªIdentifierÍ4Í8¤DateLªIdentifierÍ9Í<£nowÂÂÂW¯ReturnStatementÍIÍSLªIdentifierÍPÍR¢kbO°MethodDefinitionÍ`ÍÄÂÂLªIdentifierÍ`Íi©addModule¦methodP²FunctionExpressionÍiÍÄÀÂÂÂ‘LªIdentifierÍjÍp¦moduleN®BlockStatementÍrÍÄ’Q³ExpressionStatementÍ}Í—Y®CallExpressionÍ}Í–S°MemberExpressionÍ}ÍS°MemberExpressionÍ}Í‰T®ThisExpressionÍ}ÍLªIdentifierÍ‚Í‰§modulesÂÂLªIdentifierÍŠÍ¤pushÂÂ‘LªIdentifierÍÍ•¦moduleÂQ³ExpressionStatementÍ¡Í½R´AssignmentExpressionÍ¡Í¼¡=S°MemberExpressionÍ¡Í¯T®ThisExpressionÍ¡Í¥LªIdentifierÍ¦Í¯©updatedAtÂÂY®CallExpressionÍ²Í¼S°MemberExpressionÍ²ÍºLªIdentifierÍ²Í¶¤DateLªIdentifierÍ·Íº£nowÂÂÂO°MethodDefinitionÍÊÍzÂÂLªIdentifierÍÊÍÖ¬removeModule¦methodP²FunctionExpressionÍÖÍzÀÂÂÂ‘LªIdentifierÍ×Íß¨moduleIdN®BlockStatementÍáÍz“Q³ExpressionStatementÍìÍ'R´AssignmentExpressionÍìÍ&¡=S°MemberExpressionÍìÍøT®ThisExpressionÍìÍğLªIdentifierÍñÍø§modulesÂÂY®CallExpressionÍûÍ&S°MemberExpressionÍûÍS°MemberExpressionÍûÍT®ThisExpressionÍûÍÿLªIdentifierÍ Í§modulesÂÂLªIdentifierÍÍ¦filterÂÂ‘P·ArrowFunctionExpressionÍÍ%ÀÃÂÂ‘LªIdentifierÍÍ¡mX°BinaryExpressionÍÍ%S°MemberExpressionÍÍLªIdentifierÍÍ¡mLªIdentifierÍÍ¢idÂÂ£!==LªIdentifierÍÍ%¨moduleIdÂQ³ExpressionStatementÍ1ÍMY®CallExpressionÍ1ÍLS°MemberExpressionÍ1ÍJT®ThisExpressionÍ1Í5LªIdentifierÍ6ÍJ´rebuildMaterialListsÂÂÂQ³ExpressionStatementÍWÍsR´AssignmentExpressionÍWÍr¡=S°MemberExpressionÍWÍeT®ThisExpressionÍWÍ[LªIdentifierÍ\Íe©updatedAtÂÂY®CallExpressionÍhÍrS°MemberExpressionÍhÍpLªIdentifierÍhÍl¤DateLªIdentifierÍmÍp£nowÂÂÂO°MethodDefinitionÍ€Í¨ÂÂLªIdentifierÍ€Í‹«addMaterial¦methodP²FunctionExpressionÍ‹Í¨ÀÂÂÂ’LªIdentifierÍŒÍ”¨materialLªIdentifierÍ–Í¨moduleIdN®BlockStatementÍ Í¨“Ôr\–¤type¥start£end¤testªconsequent©alternate«IfStatementÍ«ÍULªIdentifierÍ¯Í·¨moduleIdN®BlockStatementÍ¹ÍU’J³VariableDeclarationÍÈÍñ‘K²VariableDeclaratorÍÎÍğLªIdentifierÍÎÍÔ¦moduleY®CallExpressionÍ×ÍğS°MemberExpressionÍ×ÍæT®ThisExpressionÍ×ÍÛLªIdentifierÍÜÍæªfindModuleÂÂ‘LªIdentifierÍçÍï¨moduleIdÂ¥const\«IfStatementÍÿÍJLªIdentifierÍÍ	¦moduleN®BlockStatementÍÍJ‘Q³ExpressionStatementÍÍ;Y®CallExpressionÍÍ:S°MemberExpressionÍÍ0LªIdentifierÍÍ$¦moduleLªIdentifierÍ%Í0«addMaterialÂÂ‘LªIdentifierÍ1Í9¨materialÂÀÀQ³ExpressionStatementÍ_Í{Y®CallExpressionÍ_ÍzS°MemberExpressionÍ_ÍxT®ThisExpressionÍ_ÍcLªIdentifierÍdÍx´rebuildMaterialListsÂÂÂQ³ExpressionStatementÍ…Í¡R´AssignmentExpressionÍ…Í ¡=S°MemberExpressionÍ…Í“T®ThisExpressionÍ…Í‰LªIdentifierÍŠÍ“©updatedAtÂÂY®CallExpressionÍ–Í S°MemberExpressionÍ–ÍLªIdentifierÍ–Íš¤DateLªIdentifierÍ›Í£nowÂÂÂO°MethodDefinitionÍ®Í†ÂÂLªIdentifierÍ®Í¼®removeMaterial¦methodP²FunctionExpressionÍ¼Í†ÀÂÂÂ‘LªIdentifierÍ½ÍÇªmaterialIdN®BlockStatementÍÉÍ†“Ôr]—¤type¥start£end¥await¤left¥right¤body®ForOfStatementÍÔÍ3ÂJ³VariableDeclarationÍÙÍå‘K²VariableDeclaratorÍßÍåLªIdentifierÍßÍå¦moduleÀ¥constS°MemberExpressionÍéÍõT®ThisExpressionÍéÍíLªIdentifierÍîÍõ§modulesÂÂN®BlockStatementÍ÷Í3‘Q³ExpressionStatementÍÍ(Y®CallExpressionÍÍ'S°MemberExpressionÍÍLªIdentifierÍÍ¦moduleLªIdentifierÍÍ®removeMaterialÂÂ‘LªIdentifierÍÍ&ªmaterialIdÂQ³ExpressionStatementÍ=ÍYY®CallExpressionÍ=ÍXS°MemberExpressionÍ=ÍVT®ThisExpressionÍ=ÍALªIdentifierÍBÍV´rebuildMaterialListsÂÂÂQ³ExpressionStatementÍcÍR´AssignmentExpressionÍcÍ~¡=S°MemberExpressionÍcÍqT®ThisExpressionÍcÍgLªIdentifierÍhÍq©updatedAtÂÂY®CallExpressionÍtÍ~S°MemberExpressionÍtÍ|LªIdentifierÍtÍx¤DateLªIdentifierÍyÍ|£nowÂÂÂO°MethodDefinitionÍŒÍüÂÂLªIdentifierÍŒÍ ´rebuildMaterialLists¦methodP²FunctionExpressionÍ ÍüÀÂÂÂN®BlockStatementÍ£Íü”Q³ExpressionStatementÍ®ÍÅR´AssignmentExpressionÍ®ÍÄ¡=S°MemberExpressionÍ®Í¿T®ThisExpressionÍ®Í²LªIdentifierÍ³Í¿¬allMaterialsÂÂV¯ArrayExpressionÍÂÍÄQ³ExpressionStatementÍÏÍåR´AssignmentExpressionÍÏÍä¡=S°MemberExpressionÍÏÍßT®ThisExpressionÍÏÍÓLªIdentifierÍÔÍß«aiMaterialsÂÂV¯ArrayExpressionÍâÍäQ³ExpressionStatementÍïÍR´AssignmentExpressionÍïÍ¡=S°MemberExpressionÍïÍT®ThisExpressionÍïÍóLªIdentifierÍôÍ­userMaterialsÂÂV¯ArrayExpressionÍÍ]®ForOfStatementÍÍõÂJ³VariableDeclarationÍÍ"‘K²VariableDeclaratorÍÍ"LªIdentifierÍÍ"¦moduleÀ¥constS°MemberExpressionÍ&Í2T®ThisExpressionÍ&Í*LªIdentifierÍ+Í2§modulesÂÂN®BlockStatementÍ4Íõ‘]®ForOfStatementÍCÍêÂJ³VariableDeclarationÍHÍV‘K²VariableDeclaratorÍNÍVLªIdentifierÍNÍV¨materialÀ¥constS°MemberExpressionÍZÍjLªIdentifierÍZÍ`¦moduleLªIdentifierÍaÍj©materialsÂÂN®BlockStatementÍlÍê’Q³ExpressionStatementÍÍ Y®CallExpressionÍÍŸS°MemberExpressionÍÍ•S°MemberExpressionÍÍT®ThisExpressionÍÍƒLªIdentifierÍ„Í¬allMaterialsÂÂLªIdentifierÍ‘Í•¤pushÂÂ‘LªIdentifierÍ–Í¨materialÂ\«IfStatementÍ²ÍÛX±LogicalExpressionÍ¶Í,X°BinaryExpressionÍ¶ÍæS°MemberExpressionÍ¶ÍÅLªIdentifierÍ¶Í¾¨materialLªIdentifierÍ¿ÍÅ¦sourceÂÂ£===S°MemberExpressionÍÊÍæLªIdentifierÍÊÍØ®MaterialSourceLªIdentifierÍÙÍæ­AI_SUPPLEMENTÂÂ¢||X°BinaryExpressionÍÿÍ,S°MemberExpressionÍÿÍLªIdentifierÍÿÍ¨materialLªIdentifierÍÍ¦sourceÂÂ£===S°MemberExpressionÍÍ,LªIdentifierÍÍ!®MaterialSourceLªIdentifierÍ"Í,ªWEB_SEARCHÂÂN®BlockStatementÍ.Íx‘Q³ExpressionStatementÍEÍeY®CallExpressionÍEÍdS°MemberExpressionÍEÍZS°MemberExpressionÍEÍUT®ThisExpressionÍEÍILªIdentifierÍJÍU«aiMaterialsÂÂLªIdentifierÍVÍZ¤pushÂÂ‘LªIdentifierÍ[Íc¨materialÂN®BlockStatementÍÍÛ‘Q³ExpressionStatementÍ¦ÍÈY®CallExpressionÍ¦ÍÇS°MemberExpressionÍ¦Í½S°MemberExpressionÍ¦Í¸T®ThisExpressionÍ¦ÍªLªIdentifierÍ«Í¸­userMaterialsÂÂLªIdentifierÍ¹Í½¤pushÂÂ‘LªIdentifierÍ¾ÍÆ¨materialÂO°MethodDefinitionÍÍWÂÂLªIdentifierÍÍªfindModule¦methodP²FunctionExpressionÍÍWÀÂÂÂ‘LªIdentifierÍÍ¨moduleIdN®BlockStatementÍÍW’]®ForOfStatementÍ"Í:ÂJ³VariableDeclarationÍ'Í3‘K²VariableDeclaratorÍ-Í3LªIdentifierÍ-Í3¦moduleÀ¥constS°MemberExpressionÍ7ÍCT®ThisExpressionÍ7Í;LªIdentifierÍ<ÍC§modulesÂÂN®BlockStatementÍEÍ:“\«IfStatementÍTÍ X°BinaryExpressionÍXÍnS°MemberExpressionÍXÍaLªIdentifierÍXÍ^¦moduleLªIdentifierÍ_Ía¢idÂÂ£===LªIdentifierÍfÍn¨moduleIdN®BlockStatementÍpÍ ‘W¯ReturnStatementÍƒÍ‘LªIdentifierÍŠÍ¦moduleÀJ³VariableDeclarationÍ®Íç‘K²VariableDeclaratorÍ´ÍæLªIdentifierÍ´Í¹¥foundY®CallExpressionÍ¼ÍæS°MemberExpressionÍ¼ÍÔT®ThisExpressionÍ¼ÍÀLªIdentifierÍÁÍÔ³findModuleRecursiveÂÂ’LªIdentifierÍÕÍÛ¦moduleLªIdentifierÍİÍå¨moduleIdÂ¥const\«IfStatementÍõÍ/LªIdentifierÍùÍş¥foundN®BlockStatementÍ Í/‘W¯ReturnStatementÍÍ LªIdentifierÍÍ¥foundÀW¯ReturnStatementÍDÍPU§LiteralÍKÍOÀ¤nullO°MethodDefinitionÍ]ÍÆÂÂLªIdentifierÍ]Íp³findModuleRecursive¦methodP²FunctionExpressionÍpÍÆÀÂÂÂ’LªIdentifierÍqÍw¦parentLªIdentifierÍyÍ¨targetIdN®BlockStatementÍƒÍÆ’]®ForOfStatementÍÍ©ÂJ³VariableDeclarationÍ“Í‘K²VariableDeclaratorÍ™ÍLªIdentifierÍ™Í¥childÀ¥constS°MemberExpressionÍ¢ÍµLªIdentifierÍ¢Í¨¦parentLªIdentifierÍ©Íµ¬childModulesÂÂN®BlockStatementÍ·Í©“\«IfStatementÍÆÍX°BinaryExpressionÍÊÍßS°MemberExpressionÍÊÍÒLªIdentifierÍÊÍÏ¥childLªIdentifierÍĞÍÒ¢idÂÂ£===LªIdentifierÍ×Íß¨targetIdN®BlockStatementÍáÍ‘W¯ReturnStatementÍôÍLªIdentifierÍûÍ ¥childÀJ³VariableDeclarationÍÍV‘K²VariableDeclaratorÍ$ÍULªIdentifierÍ$Í)¥foundY®CallExpressionÍ,ÍUS°MemberExpressionÍ,ÍDT®ThisExpressionÍ,Í0LªIdentifierÍ1ÍD³findModuleRecursiveÂÂ’LªIdentifierÍEÍJ¥childLªIdentifierÍLÍT¨targetIdÂ¥const\«IfStatementÍdÍLªIdentifierÍhÍm¥foundN®BlockStatementÍoÍ‘W¯ReturnStatementÍ‚ÍLªIdentifierÍ‰Í¥foundÀW¯ReturnStatementÍ³Í¿U§LiteralÍºÍ¾À¤nullO°MethodDefinitionÍÌÍFÂÂLªIdentifierÍÌÍÛ¯searchMaterials¦methodP²FunctionExpressionÍÛÍFÀÂÂÂ‘LªIdentifierÍÜÍá¥queryN®BlockStatementÍãÍF’J³VariableDeclarationÍîÍ‘K²VariableDeclaratorÍôÍLªIdentifierÍôÍşªlowerQueryY®CallExpressionÍÍS°MemberExpressionÍÍLªIdentifierÍÍ¥queryLªIdentifierÍÍ«toLowerCaseÂÂÂ¥constW¯ReturnStatementÍÍ?Y®CallExpressionÍ&Í>S°MemberExpressionÍ&Í>S°MemberExpressionÍ&Í7T®ThisExpressionÍ&Í*LªIdentifierÍ+Í7¬allMaterialsÂÂLªIdentifierÍ8Í>¦filterÂÂ‘P·ArrowFunctionExpressionÍ?Í=ÀÃÂÂ‘LªIdentifierÍ?Í@¡mX±LogicalExpressionÍDÍ=X±LogicalExpressionÍDÍöX±LogicalExpressionÍDÍ«Y®CallExpressionÍDÍnS°MemberExpressionÍDÍbY®CallExpressionÍDÍYS°MemberExpressionÍDÍWS°MemberExpressionÍDÍKLªIdentifierÍDÍE¡mLªIdentifierÍFÍK¥titleÂÂLªIdentifierÍLÍW«toLowerCaseÂÂÂLªIdentifierÍZÍb¨includesÂÂ‘LªIdentifierÍcÍmªlowerQueryÂ¢||Y®CallExpressionÍÍ«S°MemberExpressionÍÍŸY®CallExpressionÍÍ–S°MemberExpressionÍÍ”S°MemberExpressionÍÍˆLªIdentifierÍÍ€¡mLªIdentifierÍÍˆ§summaryÂÂLªIdentifierÍ‰Í”«toLowerCaseÂÂÂLªIdentifierÍ—ÍŸ¨includesÂÂ‘LªIdentifierÍ ÍªªlowerQueryÂ¢||Y®CallExpressionÍ¼ÍöS°MemberExpressionÍ¼ÍËS°MemberExpressionÍ¼ÍÆLªIdentifierÍ¼Í½¡mLªIdentifierÍ¾ÍÆ¨keywordsÂÂLªIdentifierÍÇÍË¤someÂÂ‘P·ArrowFunctionExpressionÍÌÍõÀÃÂÂ‘LªIdentifierÍÌÍÍ¡kY®CallExpressionÍÑÍõS°MemberExpressionÍÑÍéY®CallExpressionÍÑÍàS°MemberExpressionÍÑÍŞLªIdentifierÍÑÍÒ¡kLªIdentifierÍÓÍŞ«toLowerCaseÂÂÂLªIdentifierÍáÍé¨includesÂÂ‘LªIdentifierÍêÍôªlowerQueryÂÂ¢||Y®CallExpressionÍÍ=S°MemberExpressionÍÍS°MemberExpressionÍÍLªIdentifierÍÍ¡mLªIdentifierÍ	Í¤tagsÂÂLªIdentifierÍÍ¤someÂÂ‘P·ArrowFunctionExpressionÍÍ<ÀÃÂÂ‘LªIdentifierÍÍ¡tY®CallExpressionÍÍ<S°MemberExpressionÍÍ0Y®CallExpressionÍÍ'S°MemberExpressionÍÍ%LªIdentifierÍÍ¡tLªIdentifierÍÍ%«toLowerCaseÂÂÂLªIdentifierÍ(Í0¨includesÂÂ‘LªIdentifierÍ1Í;ªlowerQueryÂÂÂO°MethodDefinitionÍLÍ§ÂÂLªIdentifierÍLÍX¬filterByType¦methodP²FunctionExpressionÍXÍ§ÀÂÂÂ‘LªIdentifierÍYÍ]¤typeN®BlockStatementÍ_Í§‘W¯ReturnStatementÍjÍ Y®CallExpressionÍqÍŸS°MemberExpressionÍqÍ‰S°MemberExpressionÍqÍ‚T®ThisExpressionÍqÍuLªIdentifierÍvÍ‚¬allMaterialsÂÂLªIdentifierÍƒÍ‰¦filterÂÂ‘P·ArrowFunctionExpressionÍŠÍÀÃÂÂ‘LªIdentifierÍŠÍ‹¡mX°BinaryExpressionÍÍS°MemberExpressionÍÍ•LªIdentifierÍÍ¡mLªIdentifierÍ‘Í•¤typeÂÂ£===LªIdentifierÍšÍ¤typeÂO°MethodDefinitionÍ­ÍÂÂLªIdentifierÍ­Í»®filterBySource¦methodP²FunctionExpressionÍ»ÍÀÂÂÂ‘LªIdentifierÍ¼ÍÂ¦sourceN®BlockStatementÍÄÍ‘W¯ReturnStatementÍÏÍ	Y®CallExpressionÍÖÍS°MemberExpressionÍÖÍîS°MemberExpressionÍÖÍçT®ThisExpressionÍÖÍÚLªIdentifierÍÛÍç¬allMaterialsÂÂLªIdentifierÍèÍî¦filterÂÂ‘P·ArrowFunctionExpressionÍïÍÀÃÂÂ‘LªIdentifierÍïÍğ¡mX°BinaryExpressionÍôÍS°MemberExpressionÍôÍüLªIdentifierÍôÍõ¡mLªIdentifierÍöÍü¦sourceÂÂ£===LªIdentifierÍÍ¦sourceÂO°MethodDefinitionÍÍ 1ÂÂLªIdentifierÍÍ#­getStatistics¦methodP²FunctionExpressionÍ#Í 1ÀÂÂÂN®BlockStatementÍ&Í 1™J³VariableDeclarationÍ1ÍX‘K²VariableDeclaratorÍ7ÍWLªIdentifierÍ7Í<¥statsZ­NewExpressionÍ?ÍWLªIdentifierÍCÍU²KnowledgeBaseStats¥constQ³ExpressionStatementÍbÍ’R´AssignmentExpressionÍbÍ‘¡=S°MemberExpressionÍbÍvLªIdentifierÍbÍg¥statsLªIdentifierÍhÍv®totalMaterialsÂÂS°MemberExpressionÍyÍ‘S°MemberExpressionÍyÍŠT®ThisExpressionÍyÍ}LªIdentifierÍ~ÍŠ¬allMaterialsÂÂLªIdentifierÍ‹Í‘¦lengthÂÂQ³ExpressionStatementÍœÍÈR´AssignmentExpressionÍœÍÇ¡=S°MemberExpressionÍœÍ­LªIdentifierÍœÍ¡¥statsLªIdentifierÍ¢Í­«aiMaterialsÂÂS°MemberExpressionÍ°ÍÇS°MemberExpressionÍ°ÍÀT®ThisExpressionÍ°Í´LªIdentifierÍµÍÀ«aiMaterialsÂÂLªIdentifierÍÁÍÇ¦lengthÂÂQ³ExpressionStatementÍÒÍR´AssignmentExpressionÍÒÍ¡=S°MemberExpressionÍÒÍåLªIdentifierÍÒÍ×¥statsLªIdentifierÍØÍå­userMaterialsÂÂS°MemberExpressionÍèÍS°MemberExpressionÍèÍúT®ThisExpressionÍèÍìLªIdentifierÍíÍú­userMaterialsÂÂLªIdentifierÍûÍ¦lengthÂÂQ³ExpressionStatementÍÍXR´AssignmentExpressionÍÍW¡=S°MemberExpressionÍÍLªIdentifierÍÍ¥statsLªIdentifierÍÍ©totalSizeÂÂY®CallExpressionÍÍWS°MemberExpressionÍÍ6S°MemberExpressionÍÍ/T®ThisExpressionÍÍ"LªIdentifierÍ#Í/¬allMaterialsÂÂLªIdentifierÍ0Í6¦reduceÂÂ’P·ArrowFunctionExpressionÍ7ÍSÀÃÂÂ’LªIdentifierÍ8Í;£sumLªIdentifierÍ=Í>¡mX°BinaryExpressionÍCÍSLªIdentifierÍCÍF£sum¡+S°MemberExpressionÍIÍSLªIdentifierÍIÍJ¡mLªIdentifierÍKÍS¨fileSizeÂÂU§LiteralÍUÍV ¡0ÂQ³ExpressionStatementÍbÍŠR´AssignmentExpressionÍbÍ‰¡=S°MemberExpressionÍbÍsLªIdentifierÍbÍg¥statsLªIdentifierÍhÍs«moduleCountÂÂS°MemberExpressionÍvÍ‰S°MemberExpressionÍvÍ‚T®ThisExpressionÍvÍzLªIdentifierÍ{Í‚§modulesÂÂLªIdentifierÍƒÍ‰¦lengthÂÂQ³ExpressionStatementÍ”ÍÕR´AssignmentExpressionÍ”ÍÔ¡=S°MemberExpressionÍ”Í£LªIdentifierÍ”Í™¥statsLªIdentifierÍšÍ£©readCountÂÂS°MemberExpressionÍ¦ÍÔY®CallExpressionÍ¦ÍÍS°MemberExpressionÍ¦Í¾S°MemberExpressionÍ¦Í·T®ThisExpressionÍ¦ÍªLªIdentifierÍ«Í·¬allMaterialsÂÂLªIdentifierÍ¸Í¾¦filterÂÂ‘P·ArrowFunctionExpressionÍ¿ÍÌÀÃÂÂ‘LªIdentifierÍ¿ÍÀ¡mS°MemberExpressionÍÄÍÌLªIdentifierÍÄÍÅ¡mLªIdentifierÍÆÍÌ¦isReadÂÂÂLªIdentifierÍÎÍÔ¦lengthÂÂQ³ExpressionStatementÍßÍ R´AssignmentExpressionÍßÍ ¡=S°MemberExpressionÍßÍòLªIdentifierÍßÍä¥statsLªIdentifierÍåÍò­averageRatingÂÂY®CallExpressionÍõÍ S°MemberExpressionÍõÍ T®ThisExpressionÍõÍùLªIdentifierÍúÍ ¶calculateAverageRatingÂÂÂW¯ReturnStatementÍ Í *LªIdentifierÍ $Í )¥statsO°MethodDefinitionÍ 7Í! ÂÂLªIdentifierÍ 7Í M¶calculateAverageRating¦methodP²FunctionExpressionÍ MÍ! ÀÂÂÂN®BlockStatementÍ PÍ! “J³VariableDeclarationÍ [Í •‘K²VariableDeclaratorÍ aÍ ”LªIdentifierÍ aÍ f¥ratedY®CallExpressionÍ iÍ ”S°MemberExpressionÍ iÍ S°MemberExpressionÍ iÍ zT®ThisExpressionÍ iÍ mLªIdentifierÍ nÍ z¬allMaterialsÂÂLªIdentifierÍ {Í ¦filterÂÂ‘P·ArrowFunctionExpressionÍ ‚Í “ÀÃÂÂ‘LªIdentifierÍ ‚Í ƒ¡mX°BinaryExpressionÍ ‡Í “S°MemberExpressionÍ ‡Í LªIdentifierÍ ‡Í ˆ¡mLªIdentifierÍ ‰Í ¦ratingÂÂ¡>U§LiteralÍ ’Í “ ¡0Â¥const\«IfStatementÍ ŸÍ ÍX°BinaryExpressionÍ £Í µS°MemberExpressionÍ £Í ¯LªIdentifierÍ £Í ¨¥ratedLªIdentifierÍ ©Í ¯¦lengthÂÂ£===U§LiteralÍ ´Í µ ¡0W¯ReturnStatementÍ ÄÍ ÍU§LiteralÍ ËÍ Ì ¡0ÀW¯ReturnStatementÍ ×Í!X°BinaryExpressionÍ ŞÍ!Y®CallExpressionÍ ŞÍ!	S°MemberExpressionÍ ŞÍ êLªIdentifierÍ ŞÍ ã¥ratedLªIdentifierÍ äÍ ê¦reduceÂÂ’P·ArrowFunctionExpressionÍ ëÍ!ÀÃÂÂ’LªIdentifierÍ ìÍ ï£sumLªIdentifierÍ ñÍ ò¡mX°BinaryExpressionÍ ÷Í!LªIdentifierÍ ÷Í ú£sum¡+S°MemberExpressionÍ ıÍ!LªIdentifierÍ ıÍ ş¡mLªIdentifierÍ ÿÍ!¦ratingÂÂU§LiteralÍ!Í! ¡0Â¡/S°MemberExpressionÍ!Í!LªIdentifierÍ!Í!¥ratedLªIdentifierÍ!Í!¦lengthÂÂÀI¶ExportNamedDeclarationÍ!/Í"KM°ClassDeclarationÍ!6Í"KLªIdentifierÍ!<Í!N²KnowledgeBaseStatsÀN©ClassBodyÍ!OÍ"K‘O°MethodDefinitionÍ!VÍ"HÂÂLªIdentifierÍ!VÍ!a«constructor«constructorP²FunctionExpressionÍ!aÍ"HÀÂÂÂN®BlockStatementÍ!dÍ"H—Q³ExpressionStatementÍ!oÍ!‡R´AssignmentExpressionÍ!oÍ!†¡=S°MemberExpressionÍ!oÍ!‚T®ThisExpressionÍ!oÍ!sLªIdentifierÍ!tÍ!‚®totalMaterialsÂÂU§LiteralÍ!…Í!† ¡0Q³ExpressionStatementÍ!‘Í!¦R´AssignmentExpressionÍ!‘Í!¥¡=S°MemberExpressionÍ!‘Í!¡T®ThisExpressionÍ!‘Í!•LªIdentifierÍ!–Í!¡«aiMaterialsÂÂU§LiteralÍ!¤Í!¥ ¡0Q³ExpressionStatementÍ!°Í!ÇR´AssignmentExpressionÍ!°Í!Æ¡=S°MemberExpressionÍ!°Í!ÂT®ThisExpressionÍ!°Í!´LªIdentifierÍ!µÍ!Â­userMaterialsÂÂU§LiteralÍ!ÅÍ!Æ ¡0Q³ExpressionStatementÍ!ÑÍ!äR´AssignmentExpressionÍ!ÑÍ!ã¡=S°MemberExpressionÍ!ÑÍ!ßT®ThisExpressionÍ!ÑÍ!ÕLªIdentifierÍ!ÖÍ!ß©totalSizeÂÂU§LiteralÍ!âÍ!ã ¡0Q³ExpressionStatementÍ!îÍ"R´AssignmentExpressionÍ!îÍ"¡=S°MemberExpressionÍ!îÍ!şT®ThisExpressionÍ!îÍ!òLªIdentifierÍ!óÍ!ş«moduleCountÂÂU§LiteralÍ"Í" ¡0Q³ExpressionStatementÍ"Í" R´AssignmentExpressionÍ"Í"¡=S°MemberExpressionÍ"Í"T®ThisExpressionÍ"Í"LªIdentifierÍ"Í"©readCountÂÂU§LiteralÍ"Í" ¡0Q³ExpressionStatementÍ"*Í"AR´AssignmentExpressionÍ"*Í"@¡=S°MemberExpressionÍ"*Í"<T®ThisExpressionÍ"*Í".LªIdentifierÍ"/Í"<­averageRatingÂÂU§LiteralÍ"?Í"@ ¡0ÀI¶ExportNamedDeclarationÍ"XÍ#.M°ClassDeclarationÍ"_Í#.LªIdentifierÍ"eÍ"q¬FusionResultÀN©ClassBodyÍ"rÍ#.‘O°MethodDefinitionÍ"yÍ#+ÂÂLªIdentifierÍ"yÍ"„«constructor«constructorP²FunctionExpressionÍ"„Í#+ÀÂÂÂN®BlockStatementÍ"‡Í#+•Q³ExpressionStatementÍ"’Í"§R´AssignmentExpressionÍ"’Í"¦¡=S°MemberExpressionÍ"’Í"T®ThisExpressionÍ"’Í"–LªIdentifierÍ"—Í"§successÂÂU§LiteralÍ"¡Í"¦Â¥falseQ³ExpressionStatementÍ"±Í"ÉR´AssignmentExpressionÍ"±Í"È¡=S°MemberExpressionÍ"±Í"ÃT®ThisExpressionÍ"±Í"µLªIdentifierÍ"¶Í"Ã­mergedContentÂÂU§LiteralÍ"ÆÍ"È ¢''Q³ExpressionStatementÍ"ÓÍ"çR´AssignmentExpressionÍ"ÓÍ"æ¡=S°MemberExpressionÍ"ÓÍ"áT®ThisExpressionÍ"ÓÍ"×LªIdentifierÍ"ØÍ"á©conflictsÂÂV¯ArrayExpressionÍ"äÍ"æQ³ExpressionStatementÍ"ñÍ#R´AssignmentExpressionÍ"ñÍ#¡=S°MemberExpressionÍ"ñÍ#T®ThisExpressionÍ"ñÍ"õLªIdentifierÍ"öÍ#«suggestionsÂÂV¯ArrayExpressionÍ#Í#Q³ExpressionStatementÍ#Í#$R´AssignmentExpressionÍ#Í##¡=S°MemberExpressionÍ#Í#T®ThisExpressionÍ#Í#LªIdentifierÍ#Í#¨keywordsÂÂV¯ArrayExpressionÍ#!Í##ÀI¶ExportNamedDeclarationÍ#:Í'M°ClassDeclarationÍ#AÍ'LªIdentifierÍ#GÍ#U®MaterialParserÀN©ClassBodyÍ#VÍ'•O°MethodDefinitionÍ#]Í#¶ÃÂLªIdentifierÍ#dÍ#l¨parsePDF¦methodP²FunctionExpressionÍ#lÍ#¶ÀÂÂÂ‘LªIdentifierÍ#mÍ#t§contentN®BlockStatementÍ#vÍ#¶‘W¯ReturnStatementÍ# Í#¯LªIdentifierÍ#§Í#®§contentO°MethodDefinitionÍ#¼Í$ÃÂLªIdentifierÍ#ÃÍ#Ì©parseWord¦methodP²FunctionExpressionÍ#ÌÍ$ÀÂÂÂ‘LªIdentifierÍ#ÍÍ#Ô§contentN®BlockStatementÍ#ÖÍ$‘W¯ReturnStatementÍ#÷Í$LªIdentifierÍ#şÍ$§contentO°MethodDefinitionÍ$Í$nÃÂLªIdentifierÍ$Í$'­parseMarkdown¦methodP²FunctionExpressionÍ$'Í$nÀÂÂÂ‘LªIdentifierÍ$(Í$/§contentN®BlockStatementÍ$1Í$n‘W¯ReturnStatementÍ$XÍ$gLªIdentifierÍ$_Í$f§contentO°MethodDefinitionÍ$tÍ&¢ÃÂLªIdentifierÍ${Í$Š¯extractKeywords¦methodP²FunctionExpressionÍ$ŠÍ&¢ÀÂÂÂ‘LªIdentifierÍ$‹Í$’§contentN®BlockStatementÍ$”Í&¢•J³VariableDeclarationÍ$¾Í$á‘K²VariableDeclaratorÍ$ÄÍ$àLªIdentifierÍ$ÄÍ$É¥wordsY®CallExpressionÍ$ÌÍ$àS°MemberExpressionÍ$ÌÍ$ÙLªIdentifierÍ$ÌÍ$Ó§contentLªIdentifierÍ$ÔÍ$Ù¥splitÂÂ‘Ôr^–¤type¥start£end¥value£raw¥regex§LiteralÍ$ÚÍ$ß’£\s+ ¥/\s+/Ôr_’§pattern¥flags£\s+ Â¥constJ³VariableDeclarationÍ$ëÍ%‘K²VariableDeclaratorÍ$ñÍ%LªIdentifierÍ$ñÍ$ú©wordCountZ­NewExpressionÍ$ıÍ%LªIdentifierÍ%Í%£Map¥const]®ForOfStatementÍ%Í%âÂJ³VariableDeclarationÍ%Í% ‘K²VariableDeclaratorÍ%Í% LªIdentifierÍ%Í% ¤wordÀ¥constLªIdentifierÍ%$Í%)¥wordsN®BlockStatementÍ%+Í%â’J³VariableDeclarationÍ%:Í%[‘K²VariableDeclaratorÍ%@Í%ZLªIdentifierÍ%@Í%E¥lowerY®CallExpressionÍ%HÍ%ZS°MemberExpressionÍ%HÍ%XLªIdentifierÍ%HÍ%L¤wordLªIdentifierÍ%MÍ%X«toLowerCaseÂÂÂ¥const\«IfStatementÍ%iÍ%×X°BinaryExpressionÍ%mÍ%}S°MemberExpressionÍ%mÍ%yLªIdentifierÍ%mÍ%r¥lowerLªIdentifierÍ%sÍ%y¦lengthÂÂ¡>U§LiteralÍ%|Í%}¡3N®BlockStatementÍ%Í%×‘Q³ExpressionStatementÍ%’Í%ÈY®CallExpressionÍ%’Í%ÇS°MemberExpressionÍ%’Í%ŸLªIdentifierÍ%’Í%›©wordCountLªIdentifierÍ%œÍ%Ÿ£setÂÂ’LªIdentifierÍ% Í%¥¥lowerX°BinaryExpressionÍ%§Í%ÆX±LogicalExpressionÍ%¨Í%ÁY®CallExpressionÍ%¨Í%¼S°MemberExpressionÍ%¨Í%µLªIdentifierÍ%¨Í%±©wordCountLªIdentifierÍ%²Í%µ£getÂÂ‘LªIdentifierÍ%¶Í%»¥lowerÂ¢||U§LiteralÍ%ÀÍ%Á ¡0¡+U§LiteralÍ%ÅÍ%Æ¡1ÂÀJ³VariableDeclarationÍ%ìÍ&ƒ‘K²VariableDeclaratorÍ%òÍ&‚LªIdentifierÍ%òÍ%ø¦sortedY®CallExpressionÍ%ûÍ&‚S°MemberExpressionÍ%ûÍ&qY®CallExpressionÍ%ûÍ&_S°MemberExpressionÍ%ûÍ&XY®CallExpressionÍ%ûÍ&DS°MemberExpressionÍ%ûÍ&-Y®CallExpressionÍ%ûÍ&S°MemberExpressionÍ%ûÍ&LªIdentifierÍ%ûÍ& ¥ArrayLªIdentifierÍ&Í&¤fromÂÂ‘Y®CallExpressionÍ&Í&S°MemberExpressionÍ&Í&LªIdentifierÍ&Í&©wordCountLªIdentifierÍ&Í&§entriesÂÂÂÂLªIdentifierÍ&)Í&-¤sortÂÂ‘P·ArrowFunctionExpressionÍ&.Í&CÀÃÂÂ’LªIdentifierÍ&/Í&0¡aLªIdentifierÍ&2Í&3¡bX°BinaryExpressionÍ&8Í&CS°MemberExpressionÍ&8Í&<LªIdentifierÍ&8Í&9¡bU§LiteralÍ&:Í&;¡1ÃÂ¡-S°MemberExpressionÍ&?Í&CLªIdentifierÍ&?Í&@¡aU§LiteralÍ&AÍ&B¡1ÃÂÂLªIdentifierÍ&SÍ&X¥sliceÂÂ’U§LiteralÍ&YÍ&Z ¡0U§LiteralÍ&\Í&^
+¢10ÂLªIdentifierÍ&nÍ&q£mapÂÂ‘P·ArrowFunctionExpressionÍ&rÍ&ÀÃÂÂ‘LªIdentifierÍ&rÍ&v¤itemS°MemberExpressionÍ&zÍ&LªIdentifierÍ&zÍ&~¤itemU§LiteralÍ&Í&€ ¡0ÃÂÂ¥constW¯ReturnStatementÍ&Í&›LªIdentifierÍ&”Í&š¦sortedO°MethodDefinitionÍ&¨Í'‹ÃÂLªIdentifierÍ&¯Í&¾¯generateSummary¦methodP²FunctionExpressionÍ&¾Í'‹ÀÂÂÂ’LªIdentifierÍ&¿Í&Æ§content[±AssignmentPatternÍ&ÈÍ&×LªIdentifierÍ&ÈÍ&Ñ©maxLengthU§LiteralÍ&ÔÍ&×ÌÈ£200N®BlockStatementÍ&ÙÍ'‹’\«IfStatementÍ&äÍ'.X°BinaryExpressionÍ&èÍ'S°MemberExpressionÍ&èÍ&öLªIdentifierÍ&èÍ&ï§contentLªIdentifierÍ&ğÍ&ö¦lengthÂÂ¢<=LªIdentifierÍ&úÍ'©maxLengthN®BlockStatementÍ'Í'.‘W¯ReturnStatementÍ'Í'#LªIdentifierÍ'Í'"§contentÀW¯ReturnStatementÍ'UÍ'„X°BinaryExpressionÍ'\Í'ƒY®CallExpressionÍ'\Í'{S°MemberExpressionÍ'\Í'mLªIdentifierÍ'\Í'c§contentLªIdentifierÍ'dÍ'm©substringÂÂ’U§LiteralÍ'nÍ'o ¡0LªIdentifierÍ'qÍ'z©maxLengthÂ¡+U§LiteralÍ'~Í'ƒ£...¥'...'À

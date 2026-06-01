@@ -1,0 +1,11 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/LearningSpace",
+    "pages/ThreeQuestions",
+    "pages/Profile",
+    "pages/AISettings",
+    "pages/AIChat",
+    "pages/StudyTimer"
+  ]
+}

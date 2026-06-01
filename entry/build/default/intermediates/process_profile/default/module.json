@@ -1,0 +1,64 @@
+{
+	"app": {
+		"bundleName": "com.threeq.learner",
+		"vendor": "ThreeQ",
+		"versionCode": 1000000,
+		"versionName": "1.0.0",
+		"icon": "$media:app_icon",
+		"label": "$string:app_name",
+		"description": "三问高效学习机",
+		"minAPIVersion": 60002022,
+		"targetAPIVersion": 60002022,
+		"car": {
+			"minAPIVersion": 22
+		},
+		"apiReleaseType": "Release",
+		"compileSdkVersion": "6.0.2.130",
+		"compileSdkType": "HarmonyOS",
+		"targetMinorAPIVersion": 0,
+		"targetPatchAPIVersion": 0,
+		"appEnvironments": [],
+		"bundleType": "app",
+		"buildMode": "debug",
+		"debug": true
+	},
+	"module": {
+		"name": "entry",
+		"type": "entry",
+		"description": "$string:module_desc",
+		"mainElement": "EntryAbility",
+		"deviceTypes": [
+			"phone",
+			"tablet"
+		],
+		"deliveryWithInstall": true,
+		"installationFree": false,
+		"pages": "$profile:main_pages",
+		"abilities": [
+			{
+				"name": "EntryAbility",
+				"srcEntry": "./ets/entryability/EntryAbility.ts",
+				"description": "$string:EntryAbility_desc",
+				"icon": "$media:icon",
+				"label": "$string:app_name",
+				"startWindowIcon": "$media:icon",
+				"startWindowBackground": "$color:start_window_background",
+				"exported": true,
+				"skills": [
+					{
+						"entities": [
+							"entity.system.home"
+						],
+						"actions": [
+							"action.system.home"
+						]
+					}
+				]
+			}
+		],
+		"packageName": "entry",
+		"virtualMachine": "ark13.0.1.0",
+		"compileMode": "esmodule",
+		"dependencies": []
+	}
+}

@@ -1,0 +1,430 @@
+Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚñexport var BloomLevel;
+(function (BloomLevel) {
+    BloomLevel["MEMORY"] = "\u8BB0\u5FC6";
+    BloomLevel["UNDERSTAND"] = "\u7406\u89E3";
+    BloomLevel["APPLY"] = "\u5E94\u7528";
+    BloomLevel["ANALYZE"] = "\u5206\u6790";
+    BloomLevel["EVALUATE"] = "\u8BC4\u4EF7";
+    BloomLevel["CREATE"] = "\u521B\u9020";
+})(BloomLevel || (BloomLevel = {}));
+export class QuestionOption {
+    constructor() {
+        this.label = '';
+        this.content = '';
+        this.isCorrect = false;
+    }
+}
+export class Question {
+    constructor() {
+        this.id = '';
+        this.courseId = '';
+        this.bloomLevel = BloomLevel.MEMORY;
+        this.questionText = '';
+        this.options = [];
+        this.explanation = '';
+        this.difficulty = 1;
+    }
+}
+export class AnswerRecord {
+    constructor() {
+        this.questionId = '';
+        this.courseId = '';
+        this.selectedLabel = '';
+        this.isCorrect = false;
+        this.timestamp = 0;
+        this.timeSpent = 0;
+    }
+}
+export class EvaluationReport {
+    constructor() {
+        this.courseId = '';
+        this.courseTitle = '';
+        this.totalQuestions = 0;
+        this.correctCount = 0;
+        this.accuracy = 0;
+        this.levelScores = new Map();
+        this.weakPoints = [];
+        this.strongPoints = [];
+        this.suggestions = [];
+        this.dialogueRecords = [];
+        this.completedAt = 0;
+    }
+    getLevelScore(level) {
+        return this.levelScores.get(level) ?? 0;
+    }
+}
+export class QuestionBank {
+    static generateQuestions(courseId, topic) {
+        const levels = [
+            BloomLevel.MEMORY, BloomLevel.UNDERSTAND, BloomLevel.APPLY,
+            BloomLevel.ANALYZE, BloomLevel.EVALUATE, BloomLevel.CREATE
+        ];
+        const questions = [];
+        levels.forEach((level, idx) => {
+            const q = QuestionBank.makeQuestion(courseId, topic, level, idx);
+            if (q)
+                questions.push(q);
+        });
+        return questions;
+    }
+    static makeQuestion(courseId, topic, level, idx) {
+        const q = new Question();
+        q.id = `q_${courseId}_${idx}`;
+        q.courseId = courseId;
+        q.bloomLevel = level;
+        q.difficulty = idx + 1;
+        switch (level) {
+            case BloomLevel.MEMORY:
+                q.questionText = `å…³äºã€Œ${topic}ã€ï¼Œä»¥ä¸‹å“ªä¸ªæ˜¯æ ¸å¿ƒæ¦‚å¿µçš„æ­£ç¡®å®šä¹‰ï¼Ÿ`;
+                q.options = [
+                    { label: 'A', content: `${topic}æ˜¯æŒ‡å¯¹ç›¸å…³é¢†åŸŸçŸ¥è¯†ä½“ç³»è¿›è¡Œç³»ç»ŸåŒ–ç»„ç»‡å’Œç»“æ„åŒ–è¡¨è¾¾çš„æ–¹æ³•è®º`, isCorrect: true },
+                    { label: 'B', content: `${topic}æ˜¯æŒ‡éšæœºè·å–ä¿¡æ¯å¹¶ç®€å•å †ç Œçš„è¿‡ç¨‹`, isCorrect: false },
+                    { label: 'C', content: `${topic}æ˜¯æŒ‡å®Œå…¨ä¾èµ–ä»–äººç»éªŒè€Œä¸åŠ æ€è€ƒçš„å­¦ä¹ æ–¹å¼`, isCorrect: false },
+                    { label: 'D', content: `${topic}æ˜¯æŒ‡åªå…³æ³¨ç†è®ºè€Œå¿½è§†å®è·µåº”ç”¨çš„ç ”ç©¶æ–¹æ³•`, isCorrect: false },
+                ];
+                q.explanation = `${topic}çš„æ ¸å¿ƒåœ¨äºç³»ç»ŸåŒ–ç»„ç»‡å’Œç»“æ„åŒ–è¡¨è¾¾ï¼Œå½¢æˆå¯å¤ç”¨çš„çŸ¥è¯†ä½“ç³»ã€‚`;
+                break;
+            case BloomLevel.UNDERSTAND:
+                q.questionText = `è¯·ç”¨è‡ªå·±çš„è¯­è¨€ç†è§£ï¼šä¸ºä»€ä¹ˆã€Œ${topic}ã€ä¸­çš„æ ¸å¿ƒæ¦‚å¿µæ˜¯ç›¸äº’å…³è”çš„ï¼Ÿ`;
+                q.options = [
+                    { label: 'A', content: 'å› ä¸ºå®ƒä»¬å…±åŒæ„æˆäº†ä¸€ä¸ªæœ‰æœºçš„çŸ¥è¯†ç”Ÿæ€ç³»ç»Ÿï¼Œæ¯ä¸ªæ¦‚å¿µéƒ½ä¾èµ–äºå…¶ä»–æ¦‚å¿µè€Œå­˜åœ¨', isCorrect: true },
+                    { label: 'B', content: 'å®ƒä»¬ä¹‹é—´æ²¡æœ‰å®è´¨å…³è”ï¼Œåªæ˜¯è¢«å¼ºè¡Œå½’ç±»åœ¨ä¸€èµ·', isCorrect: false },
+                    { label: 'C', content: 'å…³è”æ€§ä»…å­˜åœ¨äºç†è®ºå±‚é¢ï¼Œå®è·µä¸­æ²¡æœ‰ä½“ç°', isCorrect: false },
+                    { label: 'D', content: 'åªæœ‰å°‘æ•°æ ¸å¿ƒæ¦‚å¿µæœ‰å…³è”ï¼Œå…¶ä»–éƒ½æ˜¯ç‹¬ç«‹çš„', isCorrect: false },
+                ];
+                q.explanation = `${topic}ä¸­çš„æ¦‚å¿µç›¸äº’ä¾å­˜ã€ç›¸äº’æ”¯æ’‘ï¼Œå½¢æˆä¸€ä¸ªå®Œæ•´çš„çŸ¥è¯†ç”Ÿæ€ç³»ç»Ÿã€‚`;
+                break;
+            case BloomLevel.APPLY:
+                q.questionText = `è¯·è¿ç”¨ã€Œ${topic}ã€ä¸­çš„æ–¹æ³•è®ºï¼Œè§£å†³ä»¥ä¸‹åœºæ™¯é—®é¢˜ï¼š\nä½ æ­£åœ¨å­¦ä¹ ä¸€ä¸ªå…¨æ–°çš„é¢†åŸŸï¼Œå¦‚ä½•åº”ç”¨ä¸‰é—®å­¦ä¹ æ³•åˆ¶å®šå­¦ä¹ è®¡åˆ’ï¼Ÿ`;
+                q.options = [
+                    { label: 'A', content: 'å…ˆé—®æ ¸å¿ƒå¿ƒæ™ºæ¨¡å‹å»ºç«‹æ¡†æ¶ï¼Œå†é—®å­¦æœ¯åˆ†æ­§æ·±å…¥ç†è§£ï¼Œæœ€åé€šè¿‡æµ‹è¯„éªŒè¯å­¦ä¹ æ•ˆæœ', isCorrect: true },
+                    { label: 'B', content: 'åªå…³æ³¨ç¬¬ä¸‰é—®çš„æµ‹è¯„ç»“æœï¼Œå¿½è§†å‰ä¸¤ä¸ªæ­¥éª¤', isCorrect: false },
+                    { label: 'C', content: 'è·³è¿‡ç†è§£ç›´æ¥èƒŒè¯µæ‰€æœ‰å†…å®¹', isCorrect: false },
+                    { label: 'D', content: 'åªä¸“æ³¨äºç¬¬ä¸€é—®ï¼Œå¿½ç•¥åç»­æ·±å…¥', isCorrect: false },
+                ];
+                q.explanation = 'ä¸‰é—®å­¦ä¹ æ³•çš„æ­£ç¡®åº”ç”¨é¡ºåºæ˜¯ï¼šå¿ƒæ™ºæ¨¡å‹ï¼ˆæ¡†æ¶ï¼‰â†’ å­¦æœ¯åˆ†æ­§ï¼ˆæ·±å…¥ï¼‰â†’ æ·±åº¦æµ‹è¯„ï¼ˆéªŒè¯ï¼‰ã€‚';
+                break;
+            case BloomLevel.ANALYZE:
+                q.questionText = `åˆ†æåœ¨ã€Œ${topic}ã€å­¦ä¹ è¿‡ç¨‹ä¸­ï¼Œä¸åŒæ•™å­¦æ–¹æ³•çš„ä¼˜åŠ£ã€‚ä»¥ä¸‹å“ªä¸ªåˆ†ææœ€å‡†ç¡®ï¼Ÿ`;
+                q.options = [
+                    { label: 'A', content: 'ä¸»åŠ¨æ¢ç©¶å¼å­¦ä¹ ä¼˜äºè¢«åŠ¨æ¥æ”¶å¼å­¦ä¹ ï¼Œå› ä¸ºå‰è€…èƒ½ä¿ƒè¿›æ·±åº¦è®¤çŸ¥åŠ å·¥å’ŒçŸ¥è¯†è¿ç§»', isCorrect: true },
+                    { label: 'B', content: 'æ‰€æœ‰æ•™å­¦æ–¹æ³•çš„æ•ˆæœéƒ½ä¸€æ ·ï¼Œå…³é”®æ˜¯å­¦ä¹ æ—¶é—´é•¿çŸ­', isCorrect: false },
+                    { label: 'C', content: 'è¢«åŠ¨æ¥æ”¶å¼å­¦ä¹ æ•ˆç‡æ›´é«˜ï¼Œå› ä¸ºå¯ä»¥å¿«é€Ÿè·å–å¤§é‡ä¿¡æ¯', isCorrect: false },
+                    { label: 'D', content: 'æ•™å­¦æ–¹æ³•çš„æ•ˆæœå–å†³äºè€å¸ˆçš„æ°´å¹³è€Œéæ–¹æ³•æœ¬èº«', isCorrect: false },
+                ];
+                q.explanation = 'ä¸»åŠ¨æ¢ç©¶å¼å­¦ä¹ é€šè¿‡æ·±åº¦è®¤çŸ¥åŠ å·¥ï¼Œä¿ƒè¿›ç†è§£ã€è®°å¿†å’ŒçŸ¥è¯†è¿ç§»ï¼Œæ•ˆæœæ˜¾è‘—ä¼˜äºè¢«åŠ¨æ¥æ”¶ã€‚';
+                break;
+            case BloomLevel.EVALUATE:
+                q.questionText = `è¯·è¯„ä»·ä»¥ä¸‹å­¦ä¹ ç­–ç•¥å¯¹ã€Œ${topic}ã€çš„æœ‰æ•ˆæ€§ï¼š\n"æ¯å¤©å­¦ä¹ 8å°æ—¶ï¼Œè¿ç»­ä¸€å‘¨ä¸“æ”»ä¸€ä¸ªä¸»é¢˜" vs "æ¯å¤©å­¦ä¹ 2å°æ—¶ï¼ŒæŒç»­ä¸€ä¸ªæœˆ"ã€‚å“ªç§ç­–ç•¥æ›´ä¼˜ï¼Ÿ`;
+                q.options = [
+                    { label: 'A', content: 'åˆ†æ•£å­¦ä¹ ï¼ˆé—´éš”æ•ˆåº”ï¼‰æ›´ä¼˜ï¼šæ¯å¤©2å°æ—¶æŒç»­ä¸€ä¸ªæœˆï¼Œåˆ©ç”¨é—´éš”æ•ˆåº”æå‡é•¿æœŸè®°å¿† retention', isCorrect: true },
+                    { label: 'B', content: 'é›†ä¸­å­¦ä¹ æ›´ä¼˜ï¼šè¿ç»­é«˜å¼ºåº¦å­¦ä¹ å¯ä»¥åœ¨çŸ­æ—¶é—´å†…æŒæ¡å¤§é‡å†…å®¹', isCorrect: false },
+                    { label: 'C', content: 'ä¸¤ç§ç­–ç•¥æ•ˆæœç›¸åŒï¼Œå–å†³äºä¸ªäººåå¥½', isCorrect: false },
+                    { label: 'D', content: 'åº”è¯¥æ›´æç«¯ï¼šæ¯å¤©å­¦ä¹ 16å°æ—¶è¿ç»­3å¤©', isCorrect: false },
+                ];
+                q.explanation = 'è®¤çŸ¥å¿ƒç†å­¦ç ”ç©¶è¡¨æ˜ï¼Œé—´éš”å­¦ä¹ ï¼ˆåˆ†æ•£ç»ƒä¹ ï¼‰èƒ½æ˜¾è‘—æå‡é•¿æœŸè®°å¿†æ•ˆæœï¼Œä¼˜äºé›†ä¸­å¡«é¸­å¼å­¦ä¹ ã€‚';
+                break;
+            case BloomLevel.CREATE:
+                q.questionText = `åŸºäºã€Œ${topic}ã€çš„å­¦ä¹ å¿ƒå¾—ï¼Œè¯·è®¾è®¡ä¸€ä¸ªåˆ›æ–°çš„å­¦ä¹ æ–¹æ¡ˆï¼Œå¸®åŠ©åˆå­¦è€…é«˜æ•ˆå…¥é—¨ã€‚`;
+                q.options = [
+                    { label: 'A', content: 'è®¾è®¡"ä¸‰é˜¶ä¹æ­¥"å­¦ä¹ æ³•ï¼šç¬¬ä¸€é˜¶æ®µå»ºç«‹å¿ƒæ™ºåœ°å›¾ï¼ˆ3æ­¥ï¼‰ï¼Œç¬¬äºŒé˜¶æ®µåŒæ­¥å®è·µéªŒè¯ï¼ˆ3æ­¥ï¼‰ï¼Œç¬¬ä¸‰é˜¶æ®µçŸ¥è¯†åˆ›æ–°è¾“å‡ºï¼ˆ3æ­¥ï¼‰', isCorrect: true },
+                    { label: 'B', content: 'éšä¾¿çœ‹çœ‹è§†é¢‘å’Œæ–‡ç« å°±è¡Œ', isCorrect: false },
+                    { label: 'C', content: 'åªåšé¢˜ç›®ä¸å­¦ç†è®º', isCorrect: false },
+                    { label: 'D', content: 'è®©åˆ«äººæ›¿å­¦ç„¶åè½¬è¿°', isCorrect: false },
+                ];
+                q.explanation = 'ä¼˜ç§€çš„å­¦ä¹ æ–¹æ¡ˆåº”è¯¥åŒ…å«ï¼šçŸ¥è¯†æ¡†æ¶å»ºç«‹ã€å®è·µéªŒè¯ã€åˆ›æ–°è¾“å‡ºä¸‰ä¸ªå®Œæ•´é˜¶æ®µï¼Œå½¢æˆå­¦ä¹ é—­ç¯ã€‚';
+                break;
+        }
+        return q;
+    }
+}
+//# sourceMappingURL=QuestionModel.js.mapÂÙFC:\Users\wyyd\Desktop\study\entry\src\main\ets\model\QuestionModel.etsÔrBœªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo¯hostModulesInfo°belongModulePath§checker¬shouldEmitJs¥entryÃÂÙ!C:\Users\wyyd\Desktop\study\entry»C:\Users\wyyd\Desktop\study¥entry¥1.0.0Ô  ”ÔrC’²hostDependencyName®hostModuleName¶../model/QuestionModel¥entryC¶../model/QuestionModel¥entryC¯./QuestionModel¥entryC¶../model/QuestionModel¥entryÙ!C:\Users\wyyd\Desktop\study\entryÔrDÜ ®¬getNodeCount²getIdentifierCount®getSymbolCount¬getTypeCountµgetInstantiationCountµgetRelationCacheSizes±isUndefinedSymbol±isArgumentsSymbol¯isUnknownSymbol¯getMergedSymbol®getDiagnostics´getGlobalDiagnostics´getRecursionIdentity¶getUnmatchedProperties¹getTypeOfSymbolAtLocation¯getTypeOfSymbolÙ(getSymbolsOfParameterPropertyDeclaration·getDeclaredTypeOfSymbol³getPropertiesOfType±getPropertyOfTypeÙ"getPrivateIdentifierPropertyOfType·getTypeOfPropertyOfType²getIndexInfoOfType³getIndexInfosOfTypeºgetIndexInfosOfIndexSymbol³getSignaturesOfType²getIndexTypeOfType¬getIndexType¬getBaseTypes¸getBaseTypeOfLiteralType®getWidenedType³getTypeFromTypeNode°getParameterTypeÙ$getParameterIdentifierNameAtPosition¸getPromisedTypeOfPromise®getAwaitedType¸getReturnTypeOfSignature®isNullableType¯getNullableType²getNonNullableType²getNonOptionalType°getTypeArguments®typeToTypeNodeÙ$indexInfoToIndexSignatureDeclaration¿signatureToSignatureDeclaration²symbolToEntityName²symbolToExpression¬symbolToNodeÙ!symbolToTypeParameterDeclarations¼symbolToParameterDeclarationºtypeParameterToDeclaration±getSymbolsInScope³getSymbolAtLocation·getIndexInfosAtLocationÙ!getShorthandAssignmentValueSymbolÙ#getExportSpecifierLocalTargetSymbol·getExportSymbolOfSymbol±getTypeAtLocationºgetTypeAtLocationForLinterÙ tryGetTypeAtLocationWithoutCheckºgetTypeOfAssignmentPatternÙ*getPropertySymbolOfDestructuringAssignment±signatureToString¬typeToString®symbolToStringµtypePredicateToString®writeSignature©writeType«writeSymbol²writeTypePredicate¼getAugmentedPropertiesOfType®getRootSymbols²getSymbolOfExpando±getContextualTypeÙ(getContextualTypeForObjectLiteralElementÙ#getContextualTypeForArgumentAtIndexÙ getContextualTypeForJsxAttribute²isContextSensitiveÙ!getTypeOfPropertyOfContextualTypeµgetFullyQualifiedNameÙ#tryGetResolvedSignatureWithoutCheck´getResolvedSignatureÙ/getResolvedSignatureForStringLiteralCompletionsÙ$getResolvedSignatureForSignatureHelpµgetExpandedParameters¹hasEffectiveRestParameterºcontainsArgumentsReference°getConstantValueµisValidPropertyAccessÙ#isValidPropertyAccessForCompletions»getSignatureFromDeclarationºisImplementationOfOverload¹getImmediateAliasedSymbol°getAliasedSymbol¯getEmitResolver²getExportsOfModule¿getExportsAndPropertiesOfModuleÙ forEachExportAndPropertyOfModule¯getSymbolWalker±getAmbientModules¹getJsxIntrinsicTagNamesAt³isOptionalParameter»tryGetMemberInModuleExportsÙ(tryGetMemberInModuleExportsAndProperties´tryFindAmbientModuleÙ(tryFindAmbientModuleWithoutAugmentations¯getApparentType¬getUnionType²isTypeAssignableTo³createAnonymousType¯createSignature¬createSymbol¯createIndexInfoªgetAnyType­getStringType­getNumberType±createPromiseType¯createArrayType¹getElementTypeOfArrayType®getBooleanType¬getFalseType«getTrueType«getVoidType°getUndefinedType«getNullType¯getESSymbolType¬getNeverType¯getOptionalType®getPromiseType²getPromiseLikeType´getAsyncIterableType²isSymbolAccessible«isArrayType«isTupleType¯isArrayLikeTypeÙ#isTypeInvalidDueToUnionDiscriminantºgetExactOptionalProperties¿getAllPossiblePropertiesOfTypesÙ(getSuggestedSymbolForNonexistentPropertyÙ#getSuggestionForNonexistentPropertyÙ,getSuggestedSymbolForNonexistentJSXAttributeÙ&getSuggestedSymbolForNonexistentSymbolÙ!getSuggestionForNonexistentSymbolÙ&getSuggestedSymbolForNonexistentModuleÙ!getSuggestionForNonexistentExportÙ+getSuggestedSymbolForNonexistentClassMember·getBaseConstraintOfType»getDefaultFromTypeParameter«resolveName¯getJsxNamespaceµgetJsxFragmentFactory¸getAccessibleSymbolChain»getTypePredicateOfSignature¹resolveExternalModuleName»resolveExternalModuleSymbol°tryGetThisTypeAt¹getTypeArgumentConstraint¸getSuggestionDiagnostics¸runWithCancellationTokenÙ3getLocalTypeParametersOfClassOrInterfaceOrTypeAlias´isDeclarationVisible´isPropertyAccessible»getTypeOnlyAliasDeclaration¿getMemberOverrideModifierStatusÙ!isTypeParameterPossiblyReferenced²getConstEnumRelate´clearConstEnumRelateµdeleteConstEnumRelateÙ$getTypeArgumentsForResolvedSignatureµgetCheckedSourceFilesÙ"collectHaveTsNoCheckFilesForLinter·clearQualifiedNameCache®isStaticRecord²isStaticSourceFileÔ  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  Ô  ÃÃÚòexport enum BloomLevel {
+  MEMORY = 'è®°å¿†',
+  UNDERSTAND = 'ç†è§£',
+  APPLY = 'åº”ç”¨',
+  ANALYZE = 'åˆ†æ',
+  EVALUATE = 'è¯„ä»·',
+  CREATE = 'åˆ›é€ '
+}
+
+export class QuestionOption {
+  label: string = '';
+  content: string = '';
+  isCorrect: boolean = false;
+}
+
+export class Question {
+  id: string = '';
+  courseId: string = '';
+  bloomLevel: BloomLevel = BloomLevel.MEMORY;
+  questionText: string = '';
+  options: QuestionOption[] = [];
+  explanation: string = '';
+  difficulty: number = 1;
+}
+
+export class AnswerRecord {
+  questionId: string = '';
+  courseId: string = '';
+  selectedLabel: string = '';
+  isCorrect: boolean = false;
+  timestamp: number = 0;
+  timeSpent: number = 0;
+}
+
+export class EvaluationReport {
+  courseId: string = '';
+  courseTitle: string = '';
+  totalQuestions: number = 0;
+  correctCount: number = 0;
+  accuracy: number = 0;
+  levelScores: Map<BloomLevel, number> = new Map();
+  weakPoints: string[] = [];
+  strongPoints: string[] = [];
+  suggestions: string[] = [];
+  dialogueRecords: AnswerRecord[] = [];
+  completedAt: number = 0;
+
+  getLevelScore(level: BloomLevel): number {
+    return this.levelScores.get(level) ?? 0;
+  }
+}
+
+export class QuestionBank {
+  static generateQuestions(courseId: string, topic: string): Question[] {
+    const levels = [
+      BloomLevel.MEMORY, BloomLevel.UNDERSTAND, BloomLevel.APPLY,
+      BloomLevel.ANALYZE, BloomLevel.EVALUATE, BloomLevel.CREATE
+    ];
+    const questions: Question[] = [];
+
+    levels.forEach((level, idx) => {
+      const q = QuestionBank.makeQuestion(courseId, topic, level, idx);
+      if (q) questions.push(q);
+    });
+    return questions;
+  }
+
+  static makeQuestion(courseId: string, topic: string, level: BloomLevel, idx: number): Question {
+    const q = new Question();
+    q.id = `q_${courseId}_${idx}`;
+    q.courseId = courseId;
+    q.bloomLevel = level;
+    q.difficulty = idx + 1;
+
+    switch (level) {
+      case BloomLevel.MEMORY:
+        q.questionText = `å…³äºã€Œ${topic}ã€ï¼Œä»¥ä¸‹å“ªä¸ªæ˜¯æ ¸å¿ƒæ¦‚å¿µçš„æ­£ç¡®å®šä¹‰ï¼Ÿ`;
+        q.options = [
+          { label: 'A', content: `${topic}æ˜¯æŒ‡å¯¹ç›¸å…³é¢†åŸŸçŸ¥è¯†ä½“ç³»è¿›è¡Œç³»ç»ŸåŒ–ç»„ç»‡å’Œç»“æ„åŒ–è¡¨è¾¾çš„æ–¹æ³•è®º`, isCorrect: true },
+          { label: 'B', content: `${topic}æ˜¯æŒ‡éšæœºè·å–ä¿¡æ¯å¹¶ç®€å•å †ç Œçš„è¿‡ç¨‹`, isCorrect: false },
+          { label: 'C', content: `${topic}æ˜¯æŒ‡å®Œå…¨ä¾èµ–ä»–äººç»éªŒè€Œä¸åŠ æ€è€ƒçš„å­¦ä¹ æ–¹å¼`, isCorrect: false },
+          { label: 'D', content: `${topic}æ˜¯æŒ‡åªå…³æ³¨ç†è®ºè€Œå¿½è§†å®è·µåº”ç”¨çš„ç ”ç©¶æ–¹æ³•`, isCorrect: false },
+        ];
+        q.explanation = `${topic}çš„æ ¸å¿ƒåœ¨äºç³»ç»ŸåŒ–ç»„ç»‡å’Œç»“æ„åŒ–è¡¨è¾¾ï¼Œå½¢æˆå¯å¤ç”¨çš„çŸ¥è¯†ä½“ç³»ã€‚`;
+        break;
+      case BloomLevel.UNDERSTAND:
+        q.questionText = `è¯·ç”¨è‡ªå·±çš„è¯­è¨€ç†è§£ï¼šä¸ºä»€ä¹ˆã€Œ${topic}ã€ä¸­çš„æ ¸å¿ƒæ¦‚å¿µæ˜¯ç›¸äº’å…³è”çš„ï¼Ÿ`;
+        q.options = [
+          { label: 'A', content: 'å› ä¸ºå®ƒä»¬å…±åŒæ„æˆäº†ä¸€ä¸ªæœ‰æœºçš„çŸ¥è¯†ç”Ÿæ€ç³»ç»Ÿï¼Œæ¯ä¸ªæ¦‚å¿µéƒ½ä¾èµ–äºå…¶ä»–æ¦‚å¿µè€Œå­˜åœ¨', isCorrect: true },
+          { label: 'B', content: 'å®ƒä»¬ä¹‹é—´æ²¡æœ‰å®è´¨å…³è”ï¼Œåªæ˜¯è¢«å¼ºè¡Œå½’ç±»åœ¨ä¸€èµ·', isCorrect: false },
+          { label: 'C', content: 'å…³è”æ€§ä»…å­˜åœ¨äºç†è®ºå±‚é¢ï¼Œå®è·µä¸­æ²¡æœ‰ä½“ç°', isCorrect: false },
+          { label: 'D', content: 'åªæœ‰å°‘æ•°æ ¸å¿ƒæ¦‚å¿µæœ‰å…³è”ï¼Œå…¶ä»–éƒ½æ˜¯ç‹¬ç«‹çš„', isCorrect: false },
+        ];
+        q.explanation = `${topic}ä¸­çš„æ¦‚å¿µç›¸äº’ä¾å­˜ã€ç›¸äº’æ”¯æ’‘ï¼Œå½¢æˆä¸€ä¸ªå®Œæ•´çš„çŸ¥è¯†ç”Ÿæ€ç³»ç»Ÿã€‚`;
+        break;
+      case BloomLevel.APPLY:
+        q.questionText = `è¯·è¿ç”¨ã€Œ${topic}ã€ä¸­çš„æ–¹æ³•è®ºï¼Œè§£å†³ä»¥ä¸‹åœºæ™¯é—®é¢˜ï¼š\nä½ æ­£åœ¨å­¦ä¹ ä¸€ä¸ªå…¨æ–°çš„é¢†åŸŸï¼Œå¦‚ä½•åº”ç”¨ä¸‰é—®å­¦ä¹ æ³•åˆ¶å®šå­¦ä¹ è®¡åˆ’ï¼Ÿ`;
+        q.options = [
+          { label: 'A', content: 'å…ˆé—®æ ¸å¿ƒå¿ƒæ™ºæ¨¡å‹å»ºç«‹æ¡†æ¶ï¼Œå†é—®å­¦æœ¯åˆ†æ­§æ·±å…¥ç†è§£ï¼Œæœ€åé€šè¿‡æµ‹è¯„éªŒè¯å­¦ä¹ æ•ˆæœ', isCorrect: true },
+          { label: 'B', content: 'åªå…³æ³¨ç¬¬ä¸‰é—®çš„æµ‹è¯„ç»“æœï¼Œå¿½è§†å‰ä¸¤ä¸ªæ­¥éª¤', isCorrect: false },
+          { label: 'C', content: 'è·³è¿‡ç†è§£ç›´æ¥èƒŒè¯µæ‰€æœ‰å†…å®¹', isCorrect: false },
+          { label: 'D', content: 'åªä¸“æ³¨äºç¬¬ä¸€é—®ï¼Œå¿½ç•¥åç»­æ·±å…¥', isCorrect: false },
+        ];
+        q.explanation = 'ä¸‰é—®å­¦ä¹ æ³•çš„æ­£ç¡®åº”ç”¨é¡ºåºæ˜¯ï¼šå¿ƒæ™ºæ¨¡å‹ï¼ˆæ¡†æ¶ï¼‰â†’ å­¦æœ¯åˆ†æ­§ï¼ˆæ·±å…¥ï¼‰â†’ æ·±åº¦æµ‹è¯„ï¼ˆéªŒè¯ï¼‰ã€‚';
+        break;
+      case BloomLevel.ANALYZE:
+        q.questionText = `åˆ†æåœ¨ã€Œ${topic}ã€å­¦ä¹ è¿‡ç¨‹ä¸­ï¼Œä¸åŒæ•™å­¦æ–¹æ³•çš„ä¼˜åŠ£ã€‚ä»¥ä¸‹å“ªä¸ªåˆ†ææœ€å‡†ç¡®ï¼Ÿ`;
+        q.options = [
+          { label: 'A', content: 'ä¸»åŠ¨æ¢ç©¶å¼å­¦ä¹ ä¼˜äºè¢«åŠ¨æ¥æ”¶å¼å­¦ä¹ ï¼Œå› ä¸ºå‰è€…èƒ½ä¿ƒè¿›æ·±åº¦è®¤çŸ¥åŠ å·¥å’ŒçŸ¥è¯†è¿ç§»', isCorrect: true },
+          { label: 'B', content: 'æ‰€æœ‰æ•™å­¦æ–¹æ³•çš„æ•ˆæœéƒ½ä¸€æ ·ï¼Œå…³é”®æ˜¯å­¦ä¹ æ—¶é—´é•¿çŸ­', isCorrect: false },
+          { label: 'C', content: 'è¢«åŠ¨æ¥æ”¶å¼å­¦ä¹ æ•ˆç‡æ›´é«˜ï¼Œå› ä¸ºå¯ä»¥å¿«é€Ÿè·å–å¤§é‡ä¿¡æ¯', isCorrect: false },
+          { label: 'D', content: 'æ•™å­¦æ–¹æ³•çš„æ•ˆæœå–å†³äºè€å¸ˆçš„æ°´å¹³è€Œéæ–¹æ³•æœ¬èº«', isCorrect: false },
+        ];
+        q.explanation = 'ä¸»åŠ¨æ¢ç©¶å¼å­¦ä¹ é€šè¿‡æ·±åº¦è®¤çŸ¥åŠ å·¥ï¼Œä¿ƒè¿›ç†è§£ã€è®°å¿†å’ŒçŸ¥è¯†è¿ç§»ï¼Œæ•ˆæœæ˜¾è‘—ä¼˜äºè¢«åŠ¨æ¥æ”¶ã€‚';
+        break;
+      case BloomLevel.EVALUATE:
+        q.questionText = `è¯·è¯„ä»·ä»¥ä¸‹å­¦ä¹ ç­–ç•¥å¯¹ã€Œ${topic}ã€çš„æœ‰æ•ˆæ€§ï¼š\n"æ¯å¤©å­¦ä¹ 8å°æ—¶ï¼Œè¿ç»­ä¸€å‘¨ä¸“æ”»ä¸€ä¸ªä¸»é¢˜" vs "æ¯å¤©å­¦ä¹ 2å°æ—¶ï¼ŒæŒç»­ä¸€ä¸ªæœˆ"ã€‚å“ªç§ç­–ç•¥æ›´ä¼˜ï¼Ÿ`;
+        q.options = [
+          { label: 'A', content: 'åˆ†æ•£å­¦ä¹ ï¼ˆé—´éš”æ•ˆåº”ï¼‰æ›´ä¼˜ï¼šæ¯å¤©2å°æ—¶æŒç»­ä¸€ä¸ªæœˆï¼Œåˆ©ç”¨é—´éš”æ•ˆåº”æå‡é•¿æœŸè®°å¿† retention', isCorrect: true },
+          { label: 'B', content: 'é›†ä¸­å­¦ä¹ æ›´ä¼˜ï¼šè¿ç»­é«˜å¼ºåº¦å­¦ä¹ å¯ä»¥åœ¨çŸ­æ—¶é—´å†…æŒæ¡å¤§é‡å†…å®¹', isCorrect: false },
+          { label: 'C', content: 'ä¸¤ç§ç­–ç•¥æ•ˆæœç›¸åŒï¼Œå–å†³äºä¸ªäººåå¥½', isCorrect: false },
+          { label: 'D', content: 'åº”è¯¥æ›´æç«¯ï¼šæ¯å¤©å­¦ä¹ 16å°æ—¶è¿ç»­3å¤©', isCorrect: false },
+        ];
+        q.explanation = 'è®¤çŸ¥å¿ƒç†å­¦ç ”ç©¶è¡¨æ˜ï¼Œé—´éš”å­¦ä¹ ï¼ˆåˆ†æ•£ç»ƒä¹ ï¼‰èƒ½æ˜¾è‘—æå‡é•¿æœŸè®°å¿†æ•ˆæœï¼Œä¼˜äºé›†ä¸­å¡«é¸­å¼å­¦ä¹ ã€‚';
+        break;
+      case BloomLevel.CREATE:
+        q.questionText = `åŸºäºã€Œ${topic}ã€çš„å­¦ä¹ å¿ƒå¾—ï¼Œè¯·è®¾è®¡ä¸€ä¸ªåˆ›æ–°çš„å­¦ä¹ æ–¹æ¡ˆï¼Œå¸®åŠ©åˆå­¦è€…é«˜æ•ˆå…¥é—¨ã€‚`;
+        q.options = [
+          { label: 'A', content: 'è®¾è®¡"ä¸‰é˜¶ä¹æ­¥"å­¦ä¹ æ³•ï¼šç¬¬ä¸€é˜¶æ®µå»ºç«‹å¿ƒæ™ºåœ°å›¾ï¼ˆ3æ­¥ï¼‰ï¼Œç¬¬äºŒé˜¶æ®µåŒæ­¥å®è·µéªŒè¯ï¼ˆ3æ­¥ï¼‰ï¼Œç¬¬ä¸‰é˜¶æ®µçŸ¥è¯†åˆ›æ–°è¾“å‡ºï¼ˆ3æ­¥ï¼‰', isCorrect: true },
+          { label: 'B', content: 'éšä¾¿çœ‹çœ‹è§†é¢‘å’Œæ–‡ç« å°±è¡Œ', isCorrect: false },
+          { label: 'C', content: 'åªåšé¢˜ç›®ä¸å­¦ç†è®º', isCorrect: false },
+          { label: 'D', content: 'è®©åˆ«äººæ›¿å­¦ç„¶åè½¬è¿°', isCorrect: false },
+        ];
+        q.explanation = 'ä¼˜ç§€çš„å­¦ä¹ æ–¹æ¡ˆåº”è¯¥åŒ…å«ï¼šçŸ¥è¯†æ¡†æ¶å»ºç«‹ã€å®è·µéªŒè¯ã€åˆ›æ–°è¾“å‡ºä¸‰ä¸ªå®Œæ•´é˜¶æ®µï¼Œå½¢æˆå­¦ä¹ é—­ç¯ã€‚';
+        break;
+    }
+    return q;
+  }
+}
+ÀA“ÔrE–§version¤fileªsourceRoot§sources¥names¨mappings°QuestionModel.js ‘±QuestionModel.etsÜ Œ•”    ”  ”   ”  ” “”    ”  ”  “” ”) ”* “” ”- ”. “” ”( ”) “” ”* ”+ “” ”+ ”, “” ”) ”* —”   ” ”  ”  ”  ”  ”$ ””  	 ” 	” 	” 	‘” 	 •” 
+” 
+” 
+” 
+” 
+•” ” 	” ” ” •” ” ” ” ” ’”  ” ‘” ””   ” ” ” ‘”  •” ” ” ” ” •” ” 
+” ” ” —” ” ” ”$ %”% &”+ ,”, -•” ” ” ” ” •” ” 	” ”  ” !•” ” ” ” ” •” ” ” ” ” ’”  ” ‘” ””   ” ” ” ‘”  •” ” ” ” ” •” ” 
+” ” ” •” ” ” ” ”  •” ” ” ” ” •” ” ” ” ” •” ” ” ” ” ’”   ”  ‘”  ””  " ” "” "” "‘” " •” #” #
+” #” #” #•” $” $” $” $” $•” %” %” %” %”  %•” &” &” &” &” &•” '” '
+” '” '” '—” (” (” ()” (-”" (0”$ (2”% (3•” )” )” )” )” )•” *” *” *” *” *•” +” +” +” +” +•” ,” ,” ,$”! ,&”" ,'•” -” -” -” -” -’” 2 ” 2”” /” /” /” /!” 0” 0” 0” 0” 0”  0”# 0”$ 0 ”) 0%”* 0&”. 0*”/ 0+”0 0,’” 1” 1‘” 2””  4 ” 4” 4” 4˜” 5”
+ 5” 5	” 5” 5”% 5+”' 5-”, 5:”” 6” 6
+” 6” 6œ” 7” 7” 7” 7” 7”) 7#”* 7$”4 7.”6 70”Ì@ 7:”ÌA 7;”ÌF 7Ì@œ” 8” 8” 8” 8”  8”* 8$”+ 8%”3 8-”5 8/”? 89”Ì@ 8:”ÌF 8Ì@’”	 9”
+ 9–” :” :
+” :” :"” :$” :%›” <” <
+” <” <” <” <” <” <”" <”$ < ”& <"Ü ” =” =” =” =”" =”# =”/ =)”0 =*”8 =2”: =4”? =9”ÌA =;”ÌF =Ì@”ÌH =ÌB”ÌK =ÌE”ÌL =ÌF”ÌM =ÌG“” >” >
+” >˜” >” >” >” >” >”  >”! >”" >”” ?”	 ?”
+ ?” ?”” Ì@” Ì@” Ì@” Ì@’” ÌA” ÌAœ” ÌC”
+ ÌC” ÌC	” ÌC” ÌC”  ÌC&”" ÌC(”' ÌC5”) ÌC7”. ÌCÌH”0 ÌCÌJ”3 ÌCÌU˜” ÌD” ÌD
+” ÌD” ÌD” ÌD” ÌD”  ÌD”! ÌD›” ÌE”	 ÌE”
+ ÌE” ÌE” ÌE” ÌE” ÌE”  ÌE”# ÌE”% ÌE!”& ÌE"—” ÌF”	 ÌF”
+ ÌF” ÌF” ÌF” ÌF” ÌF—” ÌG”	 ÌG”
+ ÌG” ÌG” ÌG” ÌG” ÌG™” ÌH”	 ÌH”
+ ÌH” ÌH” ÌH” ÌH” ÌH” ÌH” ÌH”” ÌJ” ÌJ” ÌJ” ÌJ•” ÌK” ÌK” ÌK” ÌK”" ÌK™” ÌL” ÌL	” ÌL
+” ÌL”! ÌL”' ÌL”, ÌL$”? ÌL7”Ì@ ÌL8•” ÌM” ÌM	” ÌM
+” ÌM” ÌMÜ ” ÌN
+” ÌN” ÌN” ÌN”  ÌN”" ÌN”) ÌN”+ ÌN!”. ÌN$”3 ÌN)”ÌQ ÌNÌG”ÌS ÌNÌI”Ì\ ÌNÌR”Ì^ ÌNÌT”Ìb ÌNÌX”Ìd ÌNÌZÜ ” ÌO
+” ÌO” ÌO” ÌO”  ÌO”" ÌO”) ÌO”+ ÌO!”. ÌO$”3 ÌO)”ÌE ÌO;”ÌG ÌO=”ÌP ÌOÌF”ÌR ÌOÌH”ÌW ÌOÌM”ÌY ÌOÌOÜ ” ÌP
+” ÌP” ÌP” ÌP”  ÌP”" ÌP”) ÌP”+ ÌP!”. ÌP$”3 ÌP)”ÌI ÌP?”ÌK ÌPÌA”ÌT ÌPÌJ”ÌV ÌPÌL”Ì[ ÌPÌQ”Ì] ÌPÌSÜ ” ÌQ
+” ÌQ” ÌQ” ÌQ”  ÌQ”" ÌQ”) ÌQ”+ ÌQ!”. ÌQ$”3 ÌQ)”ÌH ÌQ>”ÌJ ÌQÌ@”ÌS ÌQÌI”ÌU ÌQÌK”ÌZ ÌQÌP”Ì\ ÌQÌR’” ÌR	” ÌR
+™” ÌS” ÌS	” ÌS
+” ÌS”  ÌS”# ÌS”( ÌS ”ÌF ÌS>”ÌG ÌS?’” ÌT” ÌT•” ÌU” ÌU” ÌU” ÌU”& ÌU ™” ÌV” ÌV	” ÌV
+” ÌV”! ÌV”2 ÌV*”7 ÌV/”ÌG ÌV?”ÌH ÌVÌ@•” ÌW” ÌW	” ÌW
+” ÌW” ÌW” ÌX
+” ÌX” ÌX” ÌX”  ÌX”" ÌX”) ÌX”+ ÌX!”ÌQ ÌXÌG”ÌS ÌXÌI”Ì\ ÌXÌR”Ì^ ÌXÌT”Ìb ÌXÌX”Ìd ÌXÌZ” ÌY
+” ÌY” ÌY” ÌY”  ÌY”" ÌY”) ÌY”+ ÌY!”ÌB ÌY8”ÌD ÌY:”ÌM ÌYÌC”ÌO ÌYÌE”ÌT ÌYÌJ”ÌV ÌYÌL” ÌZ
+” ÌZ” ÌZ” ÌZ”  ÌZ”" ÌZ”) ÌZ”+ ÌZ!”Ì@ ÌZ6”ÌB ÌZ8”ÌK ÌZÌA”ÌM ÌZÌC”ÌR ÌZÌH”ÌT ÌZÌJ” Ì[
+” Ì[” Ì[” Ì[”  Ì[”" Ì[”) Ì[”+ Ì[!”Ì@ Ì[6”ÌB Ì[8”ÌK Ì[ÌA”ÌM Ì[ÌC”ÌR Ì[ÌH”ÌT Ì[ÌJ’” Ì\	” Ì\
+™” Ì]” Ì]	” Ì]
+” Ì]”  Ì]”# Ì]”( Ì] ”ÌF Ì]>”ÌG Ì]?’” Ì^” Ì^•” Ì_” Ì_” Ì_” Ì_”! Ì_™” Ì`” Ì`	” Ì`
+” Ì`”! Ì`”( Ì` ”- Ì`%”Ì^ Ì`ÌV”Ì_ Ì`ÌW•” Ìa” Ìa	” Ìa
+” Ìa” Ìa” Ìb
+” Ìb” Ìb” Ìb”  Ìb”" Ìb”) Ìb”+ Ìb!”ÌQ ÌbÌG”ÌS ÌbÌI”Ì\ ÌbÌR”Ì^ ÌbÌT”Ìb ÌbÌX”Ìd ÌbÌZ” Ìc
+” Ìc” Ìc” Ìc”  Ìc”" Ìc”) Ìc”+ Ìc!”Ì@ Ìc6”ÌB Ìc8”ÌK ÌcÌA”ÌM ÌcÌC”ÌR ÌcÌH”ÌT ÌcÌJ” Ìd
+” Ìd” Ìd” Ìd”  Ìd”" Ìd”) Ìd”+ Ìd!”9 Ìd/”; Ìd1”ÌD Ìd:”ÌF Ìd<”ÌK ÌdÌA”ÌM ÌdÌC” Ìe
+” Ìe” Ìe” Ìe”  Ìe”" Ìe”) Ìe”+ Ìe!”; Ìe1”= Ìe3”ÌF Ìe<”ÌH Ìe>”ÌM ÌeÌC”ÌO ÌeÌE’” Ìf	” Ìf
+—” Ìg” Ìg	” Ìg
+” Ìg”  Ìg”ÌM ÌgÌE”ÌN ÌgÌF’” Ìh” Ìh•” Ìi” Ìi” Ìi” Ìi”# Ìi™” Ìj” Ìj	” Ìj
+” Ìj”! Ìj”( Ìj ”- Ìj%”ÌJ ÌjÌB”ÌK ÌjÌC•” Ìk” Ìk	” Ìk
+” Ìk” Ìk” Ìl
+” Ìl” Ìl” Ìl”  Ìl”" Ìl”) Ìl”+ Ìl!”ÌP ÌlÌF”ÌR ÌlÌH”Ì[ ÌlÌQ”Ì] ÌlÌS”Ìa ÌlÌW”Ìc ÌlÌY” Ìm
+” Ìm” Ìm” Ìm”  Ìm”" Ìm”) Ìm”+ Ìm!”ÌC Ìm9”ÌE Ìm;”ÌN ÌmÌD”ÌP ÌmÌF”ÌU ÌmÌK”ÌW ÌmÌM” Ìn
+” Ìn” Ìn” Ìn”  Ìn”" Ìn”) Ìn”+ Ìn!”ÌE Ìn;”ÌG Ìn=”ÌP ÌnÌF”ÌR ÌnÌH”ÌW ÌnÌM”ÌY ÌnÌO” Ìo
+” Ìo” Ìo” Ìo”  Ìo”" Ìo”) Ìo”+ Ìo!”ÌB Ìo8”ÌD Ìo:”ÌM ÌoÌC”ÌO ÌoÌE”ÌT ÌoÌJ”ÌV ÌoÌL’” Ìp	” Ìp
+—” Ìq” Ìq	” Ìq
+” Ìq”  Ìq”ÌJ ÌqÌB”ÌK ÌqÌC’” Ìr” Ìr•” Ìs” Ìs” Ìs” Ìs”$ Ìs™” Ìt” Ìt	” Ìt
+” Ìt”! Ìt”/ Ìt'”4 Ìt,”Ìm ÌtÌe”Ìn ÌtÌf•” Ìu” Ìu	” Ìu
+” Ìu” Ìu” Ìv
+” Ìv” Ìv” Ìv”  Ìv”" Ìv”) Ìv”+ Ìv!”Ì[ ÌvÌQ”Ì] ÌvÌS”Ìf ÌvÌ\”Ìh ÌvÌ^”Ìl ÌvÌb”Ìn ÌvÌd” Ìw
+” Ìw” Ìw” Ìw”  Ìw”" Ìw”) Ìw”+ Ìw!”ÌH Ìw>”ÌJ ÌwÌ@”ÌS ÌwÌI”ÌU ÌwÌK”ÌZ ÌwÌP”Ì\ ÌwÌR” Ìx
+” Ìx” Ìx” Ìx”  Ìx”" Ìx”) Ìx”+ Ìx!”= Ìx3”? Ìx5”ÌH Ìx>”ÌJ ÌxÌ@”ÌO ÌxÌE”ÌQ ÌxÌG” Ìy
+” Ìy” Ìy” Ìy”  Ìy”" Ìy”) Ìy”+ Ìy!”? Ìy5”ÌA Ìy7”ÌJ ÌyÌ@”ÌL ÌyÌB”ÌQ ÌyÌG”ÌS ÌyÌI’” Ìz	” Ìz
+—” Ì{” Ì{	” Ì{
+” Ì{”  Ì{”ÌL Ì{ÌD”ÌM Ì{ÌE’” Ì|” Ì|•” Ì}” Ì}” Ì}” Ì}”" Ì}™” Ì~” Ì~	” Ì~
+” Ì~”! Ì~”' Ì~”, Ì~$”ÌL Ì~ÌD”ÌM Ì~ÌE•” Ì” Ì	” Ì
+” Ì” Ì” Ì€
+” Ì€” Ì€” Ì€”  Ì€”" Ì€”) Ì€”+ Ì€!”Ìe Ì€Ì[”Ìg Ì€Ì]”Ìp Ì€Ìf”Ìr Ì€Ìh”Ìv Ì€Ìl”Ìx Ì€Ìn” Ì
+” Ì” Ì” Ì”  Ì”" Ì”) Ì”+ Ì!”8 Ì.”: Ì0”ÌC Ì9”ÌE Ì;”ÌJ ÌÌ@”ÌL ÌÌB” Ì‚
+” Ì‚” Ì‚” Ì‚”  Ì‚”" Ì‚”) Ì‚”+ Ì‚!”5 Ì‚+”7 Ì‚-”Ì@ Ì‚6”ÌB Ì‚8”ÌG Ì‚=”ÌI Ì‚?” Ìƒ
+” Ìƒ” Ìƒ” Ìƒ”  Ìƒ”" Ìƒ”) Ìƒ”+ Ìƒ!”6 Ìƒ,”8 Ìƒ.”ÌA Ìƒ7”ÌC Ìƒ9”ÌH Ìƒ>”ÌJ ÌƒÌ@’” Ì„	” Ì„
+—” Ì…” Ì…	” Ì…
+” Ì…”  Ì…”ÌL Ì…ÌD”ÌM Ì…ÌE’” Ì†” Ì†‘”	 Ì‡”” Ìˆ” Ìˆ” Ìˆ” Ìˆ’” Ì‰” Ì‰‘” ÌŠÔrF–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ ‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
+ ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ÔrG’§missing¦pluginÃ¦genAbcÂÔ  ÔrH”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache–ÔrI–¤type¥start£end«declarationªspecifiers¦source¶ExportNamedDeclaration ÔrJ•¤type¥start£end¬declarations¤kind³VariableDeclaration‘ÔrK•¤type¥start£end¢id¤init²VariableDeclaratorÔrL”¤type¥start£end¤nameªIdentifierªBloomLevelÀ£varÀI¶ExportNamedDeclarationÍfÍùÔrM–¤type¥start£end¢idªsuperClass¤body°ClassDeclarationÍmÍùLªIdentifierÍsÍ®QuestionOptionÀÔrN”¤type¥start£end¤body©ClassBodyÍ‚Íù‘ÔrO˜¤type¥start£end¦static¨computed£key¤kind¥value°MethodDefinitionÍ‰ÍöÂÂLªIdentifierÍ‰Í”«constructor«constructorÔrP™¤type¥start£end¢idªexpression©generator¥async¦params¤body²FunctionExpressionÍ”ÍöÀÂÂÂN®BlockStatementÍ—Íö“ÔrQ”¤type¥start£endªexpression³ExpressionStatementÍ¢Í²ÔrR–¤type¥start£end¨operator¤left¥right´AssignmentExpressionÍ¢Í±¡=ÔrS—¤type¥start£end¦object¨property¨computed¨optional°MemberExpressionÍ¢Í¬ÔrT“¤type¥start£end®ThisExpressionÍ¢Í¦LªIdentifierÍ§Í¬¥labelÂÂÔrU•¤type¥start£end¥value£raw§LiteralÍ¯Í± ¢''Q³ExpressionStatementÍ¼ÍÎR´AssignmentExpressionÍ¼ÍÍ¡=S°MemberExpressionÍ¼ÍÈT®ThisExpressionÍ¼ÍÀLªIdentifierÍÁÍÈ§contentÂÂU§LiteralÍËÍÍ ¢''Q³ExpressionStatementÍØÍïR´AssignmentExpressionÍØÍî¡=S°MemberExpressionÍØÍæT®ThisExpressionÍØÍÜLªIdentifierÍİÍæ©isCorrectÂÂU§LiteralÍéÍîÂ¥falseÀI¶ExportNamedDeclarationÍûÍM°ClassDeclarationÍÍLªIdentifierÍÍ¨QuestionÀN©ClassBodyÍÍ‘O°MethodDefinitionÍÍÂÂLªIdentifierÍÍ#«constructor«constructorP²FunctionExpressionÍ#ÍÀÂÂÂN®BlockStatementÍ&Í—Q³ExpressionStatementÍ1Í>R´AssignmentExpressionÍ1Í=¡=S°MemberExpressionÍ1Í8T®ThisExpressionÍ1Í5LªIdentifierÍ6Í8¢idÂÂU§LiteralÍ;Í= ¢''Q³ExpressionStatementÍHÍ[R´AssignmentExpressionÍHÍZ¡=S°MemberExpressionÍHÍUT®ThisExpressionÍHÍLLªIdentifierÍMÍU¨courseIdÂÂU§LiteralÍXÍZ ¢''Q³ExpressionStatementÍeÍ‰R´AssignmentExpressionÍeÍˆ¡=S°MemberExpressionÍeÍtT®ThisExpressionÍeÍiLªIdentifierÍjÍtªbloomLevelÂÂS°MemberExpressionÍwÍˆLªIdentifierÍwÍªBloomLevelLªIdentifierÍ‚Íˆ¦MEMORYÂÂQ³ExpressionStatementÍ“ÍªR´AssignmentExpressionÍ“Í©¡=S°MemberExpressionÍ“Í¤T®ThisExpressionÍ“Í—LªIdentifierÍ˜Í¤¬questionTextÂÂU§LiteralÍ§Í© ¢''Q³ExpressionStatementÍ´ÍÆR´AssignmentExpressionÍ´ÍÅ¡=S°MemberExpressionÍ´ÍÀT®ThisExpressionÍ´Í¸LªIdentifierÍ¹ÍÀ§optionsÂÂÔrV”¤type¥start£end¨elements¯ArrayExpressionÍÃÍÅQ³ExpressionStatementÍĞÍæR´AssignmentExpressionÍĞÍå¡=S°MemberExpressionÍĞÍàT®ThisExpressionÍĞÍÔLªIdentifierÍÕÍà«explanationÂÂU§LiteralÍãÍå ¢''Q³ExpressionStatementÍğÍR´AssignmentExpressionÍğÍ¡=S°MemberExpressionÍğÍÿT®ThisExpressionÍğÍôLªIdentifierÍõÍÿªdifficultyÂÂU§LiteralÍÍ¡1ÀI¶ExportNamedDeclarationÍÍM°ClassDeclarationÍÍLªIdentifierÍÍ)¬AnswerRecordÀN©ClassBodyÍ*Í‘O°MethodDefinitionÍ1Í ÂÂLªIdentifierÍ1Í<«constructor«constructorP²FunctionExpressionÍ<Í ÀÂÂÂN®BlockStatementÍ?Í –Q³ExpressionStatementÍJÍ_R´AssignmentExpressionÍJÍ^¡=S°MemberExpressionÍJÍYT®ThisExpressionÍJÍNLªIdentifierÍOÍYªquestionIdÂÂU§LiteralÍ\Í^ ¢''Q³ExpressionStatementÍiÍ|R´AssignmentExpressionÍiÍ{¡=S°MemberExpressionÍiÍvT®ThisExpressionÍiÍmLªIdentifierÍnÍv¨courseIdÂÂU§LiteralÍyÍ{ ¢''Q³ExpressionStatementÍ†ÍR´AssignmentExpressionÍ†Í¡=S°MemberExpressionÍ†Í˜T®ThisExpressionÍ†ÍŠLªIdentifierÍ‹Í˜­selectedLabelÂÂU§LiteralÍ›Í ¢''Q³ExpressionStatementÍ¨Í¿R´AssignmentExpressionÍ¨Í¾¡=S°MemberExpressionÍ¨Í¶T®ThisExpressionÍ¨Í¬LªIdentifierÍ­Í¶©isCorrectÂÂU§LiteralÍ¹Í¾Â¥falseQ³ExpressionStatementÍÉÍÜR´AssignmentExpressionÍÉÍÛ¡=S°MemberExpressionÍÉÍ×T®ThisExpressionÍÉÍÍLªIdentifierÍÎÍ×©timestampÂÂU§LiteralÍÚÍÛ ¡0Q³ExpressionStatementÍæÍùR´AssignmentExpressionÍæÍø¡=S°MemberExpressionÍæÍôT®ThisExpressionÍæÍêLªIdentifierÍëÍô©timeSpentÂÂU§LiteralÍ÷Íø ¡0ÀI¶ExportNamedDeclarationÍÍıM°ClassDeclarationÍÍıLªIdentifierÍÍ"°EvaluationReportÀN©ClassBodyÍ#Íı’O°MethodDefinitionÍ*Í¥ÂÂLªIdentifierÍ*Í5«constructor«constructorP²FunctionExpressionÍ5Í¥ÀÂÂÂN®BlockStatementÍ8Í¥›Q³ExpressionStatementÍCÍVR´AssignmentExpressionÍCÍU¡=S°MemberExpressionÍCÍPT®ThisExpressionÍCÍGLªIdentifierÍHÍP¨courseIdÂÂU§LiteralÍSÍU ¢''Q³ExpressionStatementÍ`ÍvR´AssignmentExpressionÍ`Íu¡=S°MemberExpressionÍ`ÍpT®ThisExpressionÍ`ÍdLªIdentifierÍeÍp«courseTitleÂÂU§LiteralÍsÍu ¢''Q³ExpressionStatementÍ€Í˜R´AssignmentExpressionÍ€Í—¡=S°MemberExpressionÍ€Í“T®ThisExpressionÍ€Í„LªIdentifierÍ…Í“®totalQuestionsÂÂU§LiteralÍ–Í— ¡0Q³ExpressionStatementÍ¢Í¸R´AssignmentExpressionÍ¢Í·¡=S°MemberExpressionÍ¢Í³T®ThisExpressionÍ¢Í¦LªIdentifierÍ§Í³¬correctCountÂÂU§LiteralÍ¶Í· ¡0Q³ExpressionStatementÍÂÍÔR´AssignmentExpressionÍÂÍÓ¡=S°MemberExpressionÍÂÍÏT®ThisExpressionÍÂÍÆLªIdentifierÍÇÍÏ¨accuracyÂÂU§LiteralÍÒÍÓ ¡0Q³ExpressionStatementÍŞÍûR´AssignmentExpressionÍŞÍú¡=S°MemberExpressionÍŞÍîT®ThisExpressionÍŞÍâLªIdentifierÍãÍî«levelScoresÂÂÔrW•¤type¥start£end¦callee©arguments­NewExpressionÍñÍúLªIdentifierÍõÍø£MapQ³ExpressionStatementÍÍR´AssignmentExpressionÍÍ¡=S°MemberExpressionÍÍT®ThisExpressionÍÍ	LªIdentifierÍ
+ÍªweakPointsÂÂV¯ArrayExpressionÍÍQ³ExpressionStatementÍ$Í;R´AssignmentExpressionÍ$Í:¡=S°MemberExpressionÍ$Í5T®ThisExpressionÍ$Í(LªIdentifierÍ)Í5¬strongPointsÂÂV¯ArrayExpressionÍ8Í:Q³ExpressionStatementÍEÍ[R´AssignmentExpressionÍEÍZ¡=S°MemberExpressionÍEÍUT®ThisExpressionÍEÍILªIdentifierÍJÍU«suggestionsÂÂV¯ArrayExpressionÍXÍZQ³ExpressionStatementÍeÍR´AssignmentExpressionÍeÍ~¡=S°MemberExpressionÍeÍyT®ThisExpressionÍeÍiLªIdentifierÍjÍy¯dialogueRecordsÂÂV¯ArrayExpressionÍ|Í~Q³ExpressionStatementÍ‰ÍR´AssignmentExpressionÍ‰Í¡=S°MemberExpressionÍ‰Í™T®ThisExpressionÍ‰ÍLªIdentifierÍÍ™«completedAtÂÂU§LiteralÍœÍ ¡0O°MethodDefinitionÍ«ÍúÂÂLªIdentifierÍ«Í¸­getLevelScore¦methodP²FunctionExpressionÍ¸ÍúÀÂÂÂ‘LªIdentifierÍ¹Í¾¥levelN®BlockStatementÍÀÍú‘ÔrX”¤type¥start£end¨argument¯ReturnStatementÍËÍóÔrY–¤type¥start£end¤left¨operator¥right±LogicalExpressionÍÒÍòÔrZ–¤type¥start£end¦callee©arguments¨optional®CallExpressionÍÒÍíS°MemberExpressionÍÒÍæS°MemberExpressionÍÒÍâT®ThisExpressionÍÒÍÖLªIdentifierÍ×Íâ«levelScoresÂÂLªIdentifierÍãÍæ£getÂÂ‘LªIdentifierÍçÍì¥levelÂ¢??U§LiteralÍñÍò ¡0ÀI¶ExportNamedDeclarationÍÿÍ4M°ClassDeclarationÍÍ4LªIdentifierÍÍ¬QuestionBankÀN©ClassBodyÍÍ4’O°MethodDefinitionÍ ÍÃÂLªIdentifierÍ'Í8±generateQuestions¦methodP²FunctionExpressionÍ8ÍÀÂÂÂ’LªIdentifierÍ9ÍA¨courseIdLªIdentifierÍCÍH¥topicN®BlockStatementÍJÍ”J³VariableDeclarationÍUÍ‘K²VariableDeclaratorÍ[ÍLªIdentifierÍ[Ía¦levelsV¯ArrayExpressionÍdÍ–S°MemberExpressionÍsÍ„LªIdentifierÍsÍ}ªBloomLevelLªIdentifierÍ~Í„¦MEMORYÂÂS°MemberExpressionÍ†Í›LªIdentifierÍ†ÍªBloomLevelLªIdentifierÍ‘Í›ªUNDERSTANDÂÂS°MemberExpressionÍÍ­LªIdentifierÍÍ§ªBloomLevelLªIdentifierÍ¨Í­¥APPLYÂÂS°MemberExpressionÍ¼ÍÎLªIdentifierÍ¼ÍÆªBloomLevelLªIdentifierÍÇÍÎ§ANALYZEÂÂS°MemberExpressionÍĞÍãLªIdentifierÍĞÍÚªBloomLevelLªIdentifierÍÛÍã¨EVALUATEÂÂS°MemberExpressionÍåÍöLªIdentifierÍåÍïªBloomLevelLªIdentifierÍğÍö¦CREATEÂÂ¥constJ³VariableDeclarationÍÍ!‘K²VariableDeclaratorÍÍ LªIdentifierÍÍ©questionsV¯ArrayExpressionÍÍ ¥constQ³ExpressionStatementÍ+ÍßZ®CallExpressionÍ+ÍŞS°MemberExpressionÍ+Í9LªIdentifierÍ+Í1¦levelsLªIdentifierÍ2Í9§forEachÂÂ‘P·ArrowFunctionExpressionÍ:ÍİÀÂÂÂ’LªIdentifierÍ;Í@¥levelLªIdentifierÍBÍE£idxN®BlockStatementÍJÍİ’J³VariableDeclarationÍYÍš‘K²VariableDeclaratorÍ_Í™LªIdentifierÍ_Í`¡qZ®CallExpressionÍcÍ™S°MemberExpressionÍcÍ|LªIdentifierÍcÍo¬QuestionBankLªIdentifierÍpÍ|¬makeQuestionÂÂ”LªIdentifierÍ}Í…¨courseIdLªIdentifierÍ‡ÍŒ¥topicLªIdentifierÍÍ“¥levelLªIdentifierÍ•Í˜£idxÂ¥constÔr[–¤type¥start£end¤testªconsequent©alternate«IfStatementÍ¨ÍÒLªIdentifierÍ¬Í­¡qQ³ExpressionStatementÍÀÍÒZ®CallExpressionÍÀÍÑS°MemberExpressionÍÀÍÎLªIdentifierÍÀÍÉ©questionsLªIdentifierÍÊÍÎ¤pushÂÂ‘LªIdentifierÍÏÍĞ¡qÂÀÂX¯ReturnStatementÍéÍúLªIdentifierÍğÍù©questionsO°MethodDefinitionÍÍ1ÃÂLªIdentifierÍÍ¬makeQuestion¦methodP²FunctionExpressionÍÍ1ÀÂÂÂ”LªIdentifierÍÍ#¨courseIdLªIdentifierÍ%Í*¥topicLªIdentifierÍ,Í1¥levelLªIdentifierÍ3Í6£idxN®BlockStatementÍ8Í1—J³VariableDeclarationÍCÍ\‘K²VariableDeclaratorÍIÍ[LªIdentifierÍIÍJ¡qW­NewExpressionÍMÍ[LªIdentifierÍQÍY¨Question¥constQ³ExpressionStatementÍfÍ„R´AssignmentExpressionÍfÍƒ¡=S°MemberExpressionÍfÍjLªIdentifierÍfÍg¡qLªIdentifierÍhÍj¢idÂÂÔr\•¤type¥start£end«expressions¦quasis¯TemplateLiteralÍmÍƒ’LªIdentifierÍrÍz¨courseIdLªIdentifierÍ~Í£idx“Ôr]•¤type¥start£end¥value¤tail¯TemplateElementÍnÍpÔr^’£raw¦cooked¢q_¢q_Â]¯TemplateElementÍ{Í|^¡_¡_Â]¯TemplateElementÍ‚Í‚^  ÃQ³ExpressionStatementÍÍ¤R´AssignmentExpressionÍÍ£¡=S°MemberExpressionÍÍ˜LªIdentifierÍÍ¡qLªIdentifierÍÍ˜¨courseIdÂÂLªIdentifierÍ›Í£¨courseIdQ³ExpressionStatementÍ®ÍÃR´AssignmentExpressionÍ®ÍÂ¡=S°MemberExpressionÍ®ÍºLªIdentifierÍ®Í¯¡qLªIdentifierÍ°ÍºªbloomLevelÂÂLªIdentifierÍ½ÍÂ¥levelQ³ExpressionStatementÍÍÍäR´AssignmentExpressionÍÍÍã¡=S°MemberExpressionÍÍÍÙLªIdentifierÍÍÍÎ¡qLªIdentifierÍÏÍÙªdifficultyÂÂY°BinaryExpressionÍÜÍãLªIdentifierÍÜÍß£idx¡+U§LiteralÍâÍã¡1Ôr_•¤type¥start£end¬discriminant¥cases¯SwitchStatementÍîÍLªIdentifierÍöÍû¥level–Ôr`•¤type¥start£endªconsequent¤testªSwitchCaseÍ	Í{”Q³ExpressionStatementÍ	5Í	eR´AssignmentExpressionÍ	5Í	d¡=S°MemberExpressionÍ	5Í	CLªIdentifierÍ	5Í	6¡qLªIdentifierÍ	7Í	C¬questionTextÂÂ\¯TemplateLiteralÍ	FÍ	d‘LªIdentifierÍ	LÍ	Q¥topic’]¯TemplateElementÍ	GÍ	J^©å…³äºã€Œ©å…³äºã€ŒÂ]¯TemplateElementÍ	RÍ	c^Ù3ã€ï¼Œä»¥ä¸‹å“ªä¸ªæ˜¯æ ¸å¿ƒæ¦‚å¿µçš„æ­£ç¡®å®šä¹‰ï¼ŸÙ3ã€ï¼Œä»¥ä¸‹å“ªä¸ªæ˜¯æ ¸å¿ƒæ¦‚å¿µçš„æ­£ç¡®å®šä¹‰ï¼ŸÃQ³ExpressionStatementÍ	wÍR´AssignmentExpressionÍ	wÍ¡=S°MemberExpressionÍ	wÍ	€LªIdentifierÍ	wÍ	x¡qLªIdentifierÍ	yÍ	€§optionsÂÂV¯ArrayExpressionÍ	ƒÍ”Ôra”¤type¥start£endªproperties°ObjectExpressionÍ	šÍ	ê“Ôrb™¤type¥start£end¦method©shorthand¨computed£key¥value¤kind¨PropertyÍ	œÍ	¦ÂÂÂLªIdentifierÍ	œÍ	¡¥labelU§LiteralÍ	£Í	¦¡A£'A'¤initb¨PropertyÍ	¨Í	×ÂÂÂLªIdentifierÍ	¨Í	¯§content\¯TemplateLiteralÍ	±Í	×‘LªIdentifierÍ	´Í	¹¥topic’]¯TemplateElementÍ	²Í	²^  Â]¯TemplateElementÍ	ºÍ	Ö^ÙTæ˜¯æŒ‡å¯¹ç›¸å…³é¢†åŸŸçŸ¥è¯†ä½“ç³»è¿›è¡Œç³»ç»ŸåŒ–ç»„ç»‡å’Œç»“æ„åŒ–è¡¨è¾¾çš„æ–¹æ³•è®ºÙTæ˜¯æŒ‡å¯¹ç›¸å…³é¢†åŸŸçŸ¥è¯†ä½“ç³»è¿›è¡Œç³»ç»ŸåŒ–ç»„ç»‡å’Œç»“æ„åŒ–è¡¨è¾¾çš„æ–¹æ³•è®ºÃ¤initb¨PropertyÍ	ÙÍ	èÂÂÂLªIdentifierÍ	ÙÍ	â©isCorrectU§LiteralÍ	äÍ	èÃ¤true¤inita°ObjectExpressionÍ
+Í
+F“b¨PropertyÍ
+Í
+ÂÂÂLªIdentifierÍ
+Í
+¥labelU§LiteralÍ
+
+Í
+¡B£'B'¤initb¨PropertyÍ
+Í
+2ÂÂÂLªIdentifierÍ
+Í
+§content\¯TemplateLiteralÍ
+Í
+2‘LªIdentifierÍ
+Í
+ ¥topic’]¯TemplateElementÍ
+Í
+^  Â]¯TemplateElementÍ
+!Í
+1^Ù0æ˜¯æŒ‡éšæœºè·å–ä¿¡æ¯å¹¶ç®€å•å †ç Œçš„è¿‡ç¨‹Ù0æ˜¯æŒ‡éšæœºè·å–ä¿¡æ¯å¹¶ç®€å•å †ç Œçš„è¿‡ç¨‹Ã¤initb¨PropertyÍ
+4Í
+DÂÂÂLªIdentifierÍ
+4Í
+=©isCorrectU§LiteralÍ
+?Í
+DÂ¥false¤inita°ObjectExpressionÍ
+]Í
+¦“b¨PropertyÍ
+_Í
+iÂÂÂLªIdentifierÍ
+_Í
+d¥labelU§LiteralÍ
+fÍ
+i¡C£'C'¤initb¨PropertyÍ
+kÍ
+’ÂÂÂLªIdentifierÍ
+kÍ
+r§content\¯TemplateLiteralÍ
+tÍ
+’‘LªIdentifierÍ
+wÍ
+|¥topic’]¯TemplateElementÍ
+uÍ
+u^  Â]¯TemplateElementÍ
+}Í
+‘^Ù<æ˜¯æŒ‡å®Œå…¨ä¾èµ–ä»–äººç»éªŒè€Œä¸åŠ æ€è€ƒçš„å­¦ä¹ æ–¹å¼Ù<æ˜¯æŒ‡å®Œå…¨ä¾èµ–ä»–äººç»éªŒè€Œä¸åŠ æ€è€ƒçš„å­¦ä¹ æ–¹å¼Ã¤initb¨PropertyÍ
+”Í
+¤ÂÂÂLªIdentifierÍ
+”Í
+©isCorrectU§LiteralÍ
+ŸÍ
+¤Â¥false¤inita°ObjectExpressionÍ
+½Í“b¨PropertyÍ
+¿Í
+ÉÂÂÂLªIdentifierÍ
+¿Í
+Ä¥labelU§LiteralÍ
+ÆÍ
+É¡D£'D'¤initb¨PropertyÍ
+ËÍ
+ñÂÂÂLªIdentifierÍ
+ËÍ
+Ò§content\¯TemplateLiteralÍ
+ÔÍ
+ñ‘LªIdentifierÍ
+×Í
+Ü¥topic’]¯TemplateElementÍ
+ÕÍ
+Õ^  Â]¯TemplateElementÍ
+İÍ
+ğ^Ù9æ˜¯æŒ‡åªå…³æ³¨ç†è®ºè€Œå¿½è§†å®è·µåº”ç”¨çš„ç ”ç©¶æ–¹æ³•Ù9æ˜¯æŒ‡åªå…³æ³¨ç†è®ºè€Œå¿½è§†å®è·µåº”ç”¨çš„ç ”ç©¶æ–¹æ³•Ã¤initb¨PropertyÍ
+óÍÂÂÂLªIdentifierÍ
+óÍ
+ü©isCorrectU§LiteralÍ
+şÍÂ¥false¤initQ³ExpressionStatementÍ,ÍcR´AssignmentExpressionÍ,Íb¡=S°MemberExpressionÍ,Í9LªIdentifierÍ,Í-¡qLªIdentifierÍ.Í9«explanationÂÂ\¯TemplateLiteralÍ<Íb‘LªIdentifierÍ?ÍD¥topic’]¯TemplateElementÍ=Í=^  Â]¯TemplateElementÍEÍa^ÙTçš„æ ¸å¿ƒåœ¨äºç³»ç»ŸåŒ–ç»„ç»‡å’Œç»“æ„åŒ–è¡¨è¾¾ï¼Œå½¢æˆå¯å¤ç”¨çš„çŸ¥è¯†ä½“ç³»ã€‚ÙTçš„æ ¸å¿ƒåœ¨äºç³»ç»ŸåŒ–ç»„ç»‡å’Œç»“æ„åŒ–è¡¨è¾¾ï¼Œå½¢æˆå¯å¤ç”¨çš„çŸ¥è¯†ä½“ç³»ã€‚ÃÔrc”¤type¥start£end¥label®BreakStatementÍuÍ{ÀS°MemberExpressionÍ	Í	"LªIdentifierÍ	Í	ªBloomLevelLªIdentifierÍ	Í	"¦MEMORYÂÂ`ªSwitchCaseÍ‰Íğ”Q³ExpressionStatementÍ¶ÍîR´AssignmentExpressionÍ¶Íí¡=S°MemberExpressionÍ¶ÍÄLªIdentifierÍ¶Í·¡qLªIdentifierÍ¸ÍÄ¬questionTextÂÂ\¯TemplateLiteralÍÇÍí‘LªIdentifierÍØÍİ¥topic’]¯TemplateElementÍÈÍÖ^Ù*è¯·ç”¨è‡ªå·±çš„è¯­è¨€ç†è§£ï¼šä¸ºä»€ä¹ˆã€ŒÙ*è¯·ç”¨è‡ªå·±çš„è¯­è¨€ç†è§£ï¼šä¸ºä»€ä¹ˆã€ŒÂ]¯TemplateElementÍŞÍì^Ù*ã€ä¸­çš„æ ¸å¿ƒæ¦‚å¿µæ˜¯ç›¸äº’å…³è”çš„ï¼ŸÙ*ã€ä¸­çš„æ ¸å¿ƒæ¦‚å¿µæ˜¯ç›¸äº’å…³è”çš„ï¼ŸÃQ³ExpressionStatementÍ ÍR´AssignmentExpressionÍ Í¡=S°MemberExpressionÍ Í	LªIdentifierÍ Í¡qLªIdentifierÍÍ	§optionsÂÂV¯ArrayExpressionÍÍ”a°ObjectExpressionÍ#Ís“b¨PropertyÍ%Í/ÂÂÂLªIdentifierÍ%Í*¥labelU§LiteralÍ,Í/¡A£'A'¤initb¨PropertyÍ1Í`ÂÂÂLªIdentifierÍ1Í8§contentU§LiteralÍ:Í`Ùlå› ä¸ºå®ƒä»¬å…±åŒæ„æˆäº†ä¸€ä¸ªæœ‰æœºçš„çŸ¥è¯†ç”Ÿæ€ç³»ç»Ÿï¼Œæ¯ä¸ªæ¦‚å¿µéƒ½ä¾èµ–äºå…¶ä»–æ¦‚å¿µè€Œå­˜åœ¨Ùn'å› ä¸ºå®ƒä»¬å…±åŒæ„æˆäº†ä¸€ä¸ªæœ‰æœºçš„çŸ¥è¯†ç”Ÿæ€ç³»ç»Ÿï¼Œæ¯ä¸ªæ¦‚å¿µéƒ½ä¾èµ–äºå…¶ä»–æ¦‚å¿µè€Œå­˜åœ¨'¤initb¨PropertyÍbÍqÂÂÂLªIdentifierÍbÍk©isCorrectU§LiteralÍmÍqÃ¤true¤inita°ObjectExpressionÍŠÍÌ“b¨PropertyÍŒÍ–ÂÂÂLªIdentifierÍŒÍ‘¥labelU§LiteralÍ“Í–¡B£'B'¤initb¨PropertyÍ˜Í¸ÂÂÂLªIdentifierÍ˜ÍŸ§contentU§LiteralÍ¡Í¸Ù?å®ƒä»¬ä¹‹é—´æ²¡æœ‰å®è´¨å…³è”ï¼Œåªæ˜¯è¢«å¼ºè¡Œå½’ç±»åœ¨ä¸€èµ·ÙA'å®ƒä»¬ä¹‹é—´æ²¡æœ‰å®è´¨å…³è”ï¼Œåªæ˜¯è¢«å¼ºè¡Œå½’ç±»åœ¨ä¸€èµ·'¤initb¨PropertyÍºÍÊÂÂÂLªIdentifierÍºÍÃ©isCorrectU§LiteralÍÅÍÊÂ¥false¤inita°ObjectExpressionÍãÍ#“b¨PropertyÍåÍïÂÂÂLªIdentifierÍåÍê¥labelU§LiteralÍìÍï¡C£'C'¤initb¨PropertyÍñÍÂÂÂLªIdentifierÍñÍø§contentU§LiteralÍúÍÙ9å…³è”æ€§ä»…å­˜åœ¨äºç†è®ºå±‚é¢ï¼Œå®è·µä¸­æ²¡æœ‰ä½“ç°Ù;'å…³è”æ€§ä»…å­˜åœ¨äºç†è®ºå±‚é¢ï¼Œå®è·µä¸­æ²¡æœ‰ä½“ç°'¤initb¨PropertyÍÍ!ÂÂÂLªIdentifierÍÍ©isCorrectU§LiteralÍÍ!Â¥false¤inita°ObjectExpressionÍ:Íz“b¨PropertyÍ<ÍFÂÂÂLªIdentifierÍ<ÍA¥labelU§LiteralÍCÍF¡D£'D'¤initb¨PropertyÍHÍfÂÂÂLªIdentifierÍHÍO§contentU§LiteralÍQÍfÙ9åªæœ‰å°‘æ•°æ ¸å¿ƒæ¦‚å¿µæœ‰å…³è”ï¼Œå…¶ä»–éƒ½æ˜¯ç‹¬ç«‹çš„Ù;'åªæœ‰å°‘æ•°æ ¸å¿ƒæ¦‚å¿µæœ‰å…³è”ï¼Œå…¶ä»–éƒ½æ˜¯ç‹¬ç«‹çš„'¤initb¨PropertyÍhÍxÂÂÂLªIdentifierÍhÍq©isCorrectU§LiteralÍsÍxÂ¥false¤initQ³ExpressionStatementÍ¡ÍØR´AssignmentExpressionÍ¡Í×¡=S°MemberExpressionÍ¡Í®LªIdentifierÍ¡Í¢¡qLªIdentifierÍ£Í®«explanationÂÂ\¯TemplateLiteralÍ±Í×‘LªIdentifierÍ´Í¹¥topic’]¯TemplateElementÍ²Í²^  Â]¯TemplateElementÍºÍÖ^ÙTä¸­çš„æ¦‚å¿µç›¸äº’ä¾å­˜ã€ç›¸äº’æ”¯æ’‘ï¼Œå½¢æˆä¸€ä¸ªå®Œæ•´çš„çŸ¥è¯†ç”Ÿæ€ç³»ç»Ÿã€‚ÙTä¸­çš„æ¦‚å¿µç›¸äº’ä¾å­˜ã€ç›¸äº’æ”¯æ’‘ï¼Œå½¢æˆä¸€ä¸ªå®Œæ•´çš„çŸ¥è¯†ç”Ÿæ€ç³»ç»Ÿã€‚Ãc®BreakStatementÍêÍğÀS°MemberExpressionÍÍ£LªIdentifierÍÍ˜ªBloomLevelLªIdentifierÍ™Í£ªUNDERSTANDÂÂ`ªSwitchCaseÍşÍp”Q³ExpressionStatementÍ&ÍuR´AssignmentExpressionÍ&Ít¡=S°MemberExpressionÍ&Í4LªIdentifierÍ&Í'¡qLªIdentifierÍ(Í4¬questionTextÂÂ\¯TemplateLiteralÍ7Ít‘LªIdentifierÍ>ÍC¥topic’]¯TemplateElementÍ8Í<^¬è¯·è¿ç”¨ã€Œ¬è¯·è¿ç”¨ã€ŒÂ]¯TemplateElementÍDÍs^Ù‰ã€ä¸­çš„æ–¹æ³•è®ºï¼Œè§£å†³ä»¥ä¸‹åœºæ™¯é—®é¢˜ï¼š\nä½ æ­£åœ¨å­¦ä¹ ä¸€ä¸ªå…¨æ–°çš„é¢†åŸŸï¼Œå¦‚ä½•åº”ç”¨ä¸‰é—®å­¦ä¹ æ³•åˆ¶å®šå­¦ä¹ è®¡åˆ’ï¼ŸÙˆã€ä¸­çš„æ–¹æ³•è®ºï¼Œè§£å†³ä»¥ä¸‹åœºæ™¯é—®é¢˜ï¼š
+ä½ æ­£åœ¨å­¦ä¹ ä¸€ä¸ªå…¨æ–°çš„é¢†åŸŸï¼Œå¦‚ä½•åº”ç”¨ä¸‰é—®å­¦ä¹ æ³•åˆ¶å®šå­¦ä¹ è®¡åˆ’ï¼ŸÃQ³ExpressionStatementÍ‡ÍR´AssignmentExpressionÍ‡Í¡=S°MemberExpressionÍ‡ÍLªIdentifierÍ‡Íˆ¡qLªIdentifierÍ‰Í§optionsÂÂV¯ArrayExpressionÍ“Í”a°ObjectExpressionÍªÍú“b¨PropertyÍ¬Í¶ÂÂÂLªIdentifierÍ¬Í±¥labelU§LiteralÍ³Í¶¡A£'A'¤initb¨PropertyÍ¸ÍçÂÂÂLªIdentifierÍ¸Í¿§contentU§LiteralÍÁÍçÙlå…ˆé—®æ ¸å¿ƒå¿ƒæ™ºæ¨¡å‹å»ºç«‹æ¡†æ¶ï¼Œå†é—®å­¦æœ¯åˆ†æ­§æ·±å…¥ç†è§£ï¼Œæœ€åé€šè¿‡æµ‹è¯„éªŒè¯å­¦ä¹ æ•ˆæœÙn'å…ˆé—®æ ¸å¿ƒå¿ƒæ™ºæ¨¡å‹å»ºç«‹æ¡†æ¶ï¼Œå†é—®å­¦æœ¯åˆ†æ­§æ·±å…¥ç†è§£ï¼Œæœ€åé€šè¿‡æµ‹è¯„éªŒè¯å­¦ä¹ æ•ˆæœ'¤initb¨PropertyÍéÍøÂÂÂLªIdentifierÍéÍò©isCorrectU§LiteralÍôÍøÃ¤true¤inita°ObjectExpressionÍÍQ“b¨PropertyÍÍÂÂÂLªIdentifierÍÍ¥labelU§LiteralÍÍ¡B£'B'¤initb¨PropertyÍÍ=ÂÂÂLªIdentifierÍÍ&§contentU§LiteralÍ(Í=Ù9åªå…³æ³¨ç¬¬ä¸‰é—®çš„æµ‹è¯„ç»“æœï¼Œå¿½è§†å‰ä¸¤ä¸ªæ­¥éª¤Ù;'åªå…³æ³¨ç¬¬ä¸‰é—®çš„æµ‹è¯„ç»“æœï¼Œå¿½è§†å‰ä¸¤ä¸ªæ­¥éª¤'¤initb¨PropertyÍ?ÍOÂÂÂLªIdentifierÍ?ÍH©isCorrectU§LiteralÍJÍOÂ¥false¤inita°ObjectExpressionÍhÍ¡“b¨PropertyÍjÍtÂÂÂLªIdentifierÍjÍo¥labelU§LiteralÍqÍt¡C£'C'¤initb¨PropertyÍvÍÂÂÂLªIdentifierÍvÍ}§contentU§LiteralÍÍÙ$è·³è¿‡ç†è§£ç›´æ¥èƒŒè¯µæ‰€æœ‰å†…å®¹Ù&'è·³è¿‡ç†è§£ç›´æ¥èƒŒè¯µæ‰€æœ‰å†…å®¹'¤initb¨PropertyÍÍŸÂÂÂLªIdentifierÍÍ˜©isCorrectU§LiteralÍšÍŸÂ¥false¤inita°ObjectExpressionÍ¸Íó“b¨PropertyÍºÍÄÂÂÂLªIdentifierÍºÍ¿¥labelU§LiteralÍÁÍÄ¡D£'D'¤initb¨PropertyÍÆÍßÂÂÂLªIdentifierÍÆÍÍ§contentU§LiteralÍÏÍßÙ*åªä¸“æ³¨äºç¬¬ä¸€é—®ï¼Œå¿½ç•¥åç»­æ·±å…¥Ù,'åªä¸“æ³¨äºç¬¬ä¸€é—®ï¼Œå¿½ç•¥åç»­æ·±å…¥'¤initb¨PropertyÍáÍñÂÂÂLªIdentifierÍáÍê©isCorrectU§LiteralÍìÍñÂ¥false¤initQ³ExpressionStatementÍÍXR´AssignmentExpressionÍÍW¡=S°MemberExpressionÍÍ'LªIdentifierÍÍ¡qLªIdentifierÍÍ'«explanationÂÂU§LiteralÍ*ÍWÙ}ä¸‰é—®å­¦ä¹ æ³•çš„æ­£ç¡®åº”ç”¨é¡ºåºæ˜¯ï¼šå¿ƒæ™ºæ¨¡å‹ï¼ˆæ¡†æ¶ï¼‰â†’ å­¦æœ¯åˆ†æ­§ï¼ˆæ·±å…¥ï¼‰â†’ æ·±åº¦æµ‹è¯„ï¼ˆéªŒè¯ï¼‰ã€‚Ù'ä¸‰é—®å­¦ä¹ æ³•çš„æ­£ç¡®åº”ç”¨é¡ºåºæ˜¯ï¼šå¿ƒæ™ºæ¨¡å‹ï¼ˆæ¡†æ¶ï¼‰â†’ å­¦æœ¯åˆ†æ­§ï¼ˆæ·±å…¥ï¼‰â†’ æ·±åº¦æµ‹è¯„ï¼ˆéªŒè¯ï¼‰ã€‚'c®BreakStatementÍjÍpÀS°MemberExpressionÍÍLªIdentifierÍÍªBloomLevelLªIdentifierÍÍ¥APPLYÂÂ`ªSwitchCaseÍ~Íğ”Q³ExpressionStatementÍ¨ÍãR´AssignmentExpressionÍ¨Íâ¡=S°MemberExpressionÍ¨Í¶LªIdentifierÍ¨Í©¡qLªIdentifierÍªÍ¶¬questionTextÂÂ\¯TemplateLiteralÍ¹Íâ‘LªIdentifierÍÀÍÅ¥topic’]¯TemplateElementÍºÍ¾^¬åˆ†æåœ¨ã€Œ¬åˆ†æåœ¨ã€ŒÂ]¯TemplateElementÍÆÍá^ÙQã€å­¦ä¹ è¿‡ç¨‹ä¸­ï¼Œä¸åŒæ•™å­¦æ–¹æ³•çš„ä¼˜åŠ£ã€‚ä»¥ä¸‹å“ªä¸ªåˆ†ææœ€å‡†ç¡®ï¼ŸÙQã€å­¦ä¹ è¿‡ç¨‹ä¸­ï¼Œä¸åŒæ•™å­¦æ–¹æ³•çš„ä¼˜åŠ£ã€‚ä»¥ä¸‹å“ªä¸ªåˆ†ææœ€å‡†ç¡®ï¼ŸÃQ³ExpressionStatementÍõÍ‹R´AssignmentExpressionÍõÍŠ¡=S°MemberExpressionÍõÍşLªIdentifierÍõÍö¡qLªIdentifierÍ÷Íş§optionsÂÂV¯ArrayExpressionÍÍŠ”a°ObjectExpressionÍÍg“b¨PropertyÍÍ$ÂÂÂLªIdentifierÍÍ¥labelU§LiteralÍ!Í$¡A£'A'¤initb¨PropertyÍ&ÍTÂÂÂLªIdentifierÍ&Í-§contentU§LiteralÍ/ÍTÙiä¸»åŠ¨æ¢ç©¶å¼å­¦ä¹ ä¼˜äºè¢«åŠ¨æ¥æ”¶å¼å­¦ä¹ ï¼Œå› ä¸ºå‰è€…èƒ½ä¿ƒè¿›æ·±åº¦è®¤çŸ¥åŠ å·¥å’ŒçŸ¥è¯†è¿ç§»Ùk'ä¸»åŠ¨æ¢ç©¶å¼å­¦ä¹ ä¼˜äºè¢«åŠ¨æ¥æ”¶å¼å­¦ä¹ ï¼Œå› ä¸ºå‰è€…èƒ½ä¿ƒè¿›æ·±åº¦è®¤çŸ¥åŠ å·¥å’ŒçŸ¥è¯†è¿ç§»'¤initb¨PropertyÍVÍeÂÂÂLªIdentifierÍVÍ_©isCorrectU§LiteralÍaÍeÃ¤true¤inita°ObjectExpressionÍ~ÍÁ“b¨PropertyÍ€ÍŠÂÂÂLªIdentifierÍ€Í…¥labelU§LiteralÍ‡ÍŠ¡B£'B'¤initb¨PropertyÍŒÍ­ÂÂÂLªIdentifierÍŒÍ“§contentU§LiteralÍ•Í­ÙBæ‰€æœ‰æ•™å­¦æ–¹æ³•çš„æ•ˆæœéƒ½ä¸€æ ·ï¼Œå…³é”®æ˜¯å­¦ä¹ æ—¶é—´é•¿çŸ­ÙD'æ‰€æœ‰æ•™å­¦æ–¹æ³•çš„æ•ˆæœéƒ½ä¸€æ ·ï¼Œå…³é”®æ˜¯å­¦ä¹ æ—¶é—´é•¿çŸ­'¤initb¨PropertyÍ¯Í¿ÂÂÂLªIdentifierÍ¯Í¸©isCorrectU§LiteralÍºÍ¿Â¥false¤inita°ObjectExpressionÍØÍ“b¨PropertyÍÚÍäÂÂÂLªIdentifierÍÚÍß¥labelU§LiteralÍáÍä¡C£'C'¤initb¨PropertyÍæÍ	ÂÂÂLªIdentifierÍæÍí§contentU§LiteralÍïÍ	ÙHè¢«åŠ¨æ¥æ”¶å¼å­¦ä¹ æ•ˆç‡æ›´é«˜ï¼Œå› ä¸ºå¯ä»¥å¿«é€Ÿè·å–å¤§é‡ä¿¡æ¯ÙJ'è¢«åŠ¨æ¥æ”¶å¼å­¦ä¹ æ•ˆç‡æ›´é«˜ï¼Œå› ä¸ºå¯ä»¥å¿«é€Ÿè·å–å¤§é‡ä¿¡æ¯'¤initb¨PropertyÍÍÂÂÂLªIdentifierÍÍ©isCorrectU§LiteralÍÍÂ¥false¤inita°ObjectExpressionÍ4Ív“b¨PropertyÍ6Í@ÂÂÂLªIdentifierÍ6Í;¥labelU§LiteralÍ=Í@¡D£'D'¤initb¨PropertyÍBÍbÂÂÂLªIdentifierÍBÍI§contentU§LiteralÍKÍbÙ?æ•™å­¦æ–¹æ³•çš„æ•ˆæœå–å†³äºè€å¸ˆçš„æ°´å¹³è€Œéæ–¹æ³•æœ¬èº«ÙA'æ•™å­¦æ–¹æ³•çš„æ•ˆæœå–å†³äºè€å¸ˆçš„æ°´å¹³è€Œéæ–¹æ³•æœ¬èº«'¤initb¨PropertyÍdÍtÂÂÂLªIdentifierÍdÍm©isCorrectU§LiteralÍoÍtÂ¥false¤initQ³ExpressionStatementÍÍØR´AssignmentExpressionÍÍ×¡=S°MemberExpressionÍÍªLªIdentifierÍÍ¡qLªIdentifierÍŸÍª«explanationÂÂU§LiteralÍ­Í×Ùxä¸»åŠ¨æ¢ç©¶å¼å­¦ä¹ é€šè¿‡æ·±åº¦è®¤çŸ¥åŠ å·¥ï¼Œä¿ƒè¿›ç†è§£ã€è®°å¿†å’ŒçŸ¥è¯†è¿ç§»ï¼Œæ•ˆæœæ˜¾è‘—ä¼˜äºè¢«åŠ¨æ¥æ”¶ã€‚Ùz'ä¸»åŠ¨æ¢ç©¶å¼å­¦ä¹ é€šè¿‡æ·±åº¦è®¤çŸ¥åŠ å·¥ï¼Œä¿ƒè¿›ç†è§£ã€è®°å¿†å’ŒçŸ¥è¯†è¿ç§»ï¼Œæ•ˆæœæ˜¾è‘—ä¼˜äºè¢«åŠ¨æ¥æ”¶ã€‚'c®BreakStatementÍêÍğÀS°MemberExpressionÍƒÍ•LªIdentifierÍƒÍªBloomLevelLªIdentifierÍÍ•§ANALYZEÂÂ`ªSwitchCaseÍşÍ›”Q³ExpressionStatementÍ)Í‡R´AssignmentExpressionÍ)Í†¡=S°MemberExpressionÍ)Í7LªIdentifierÍ)Í*¡qLªIdentifierÍ+Í7¬questionTextÂÂ\¯TemplateLiteralÍ:Í†‘LªIdentifierÍHÍM¥topic’]¯TemplateElementÍ;ÍF^Ù!è¯·è¯„ä»·ä»¥ä¸‹å­¦ä¹ ç­–ç•¥å¯¹ã€ŒÙ!è¯·è¯„ä»·ä»¥ä¸‹å­¦ä¹ ç­–ç•¥å¯¹ã€ŒÂ]¯TemplateElementÍNÍ…^Ùã€çš„æœ‰æ•ˆæ€§ï¼š\n"æ¯å¤©å­¦ä¹ 8å°æ—¶ï¼Œè¿ç»­ä¸€å‘¨ä¸“æ”»ä¸€ä¸ªä¸»é¢˜" vs "æ¯å¤©å­¦ä¹ 2å°æ—¶ï¼ŒæŒç»­ä¸€ä¸ªæœˆ"ã€‚å“ªç§ç­–ç•¥æ›´ä¼˜ï¼ŸÙŒã€çš„æœ‰æ•ˆæ€§ï¼š
+"æ¯å¤©å­¦ä¹ 8å°æ—¶ï¼Œè¿ç»­ä¸€å‘¨ä¸“æ”»ä¸€ä¸ªä¸»é¢˜" vs "æ¯å¤©å­¦ä¹ 2å°æ—¶ï¼ŒæŒç»­ä¸€ä¸ªæœˆ"ã€‚å“ªç§ç­–ç•¥æ›´ä¼˜ï¼ŸÃQ³ExpressionStatementÍ™Í4R´AssignmentExpressionÍ™Í3¡=S°MemberExpressionÍ™Í¢LªIdentifierÍ™Íš¡qLªIdentifierÍ›Í¢§optionsÂÂV¯ArrayExpressionÍ¥Í3”a°ObjectExpressionÍ¼Í“b¨PropertyÍ¾ÍÈÂÂÂLªIdentifierÍ¾ÍÃ¥labelU§LiteralÍÅÍÈ¡A£'A'¤initb¨PropertyÍÊÍÂÂÂLªIdentifierÍÊÍÑ§contentU§LiteralÍÓÍÙtåˆ†æ•£å­¦ä¹ ï¼ˆé—´éš”æ•ˆåº”ï¼‰æ›´ä¼˜ï¼šæ¯å¤©2å°æ—¶æŒç»­ä¸€ä¸ªæœˆï¼Œåˆ©ç”¨é—´éš”æ•ˆåº”æå‡é•¿æœŸè®°å¿† retentionÙv'åˆ†æ•£å­¦ä¹ ï¼ˆé—´éš”æ•ˆåº”ï¼‰æ›´ä¼˜ï¼šæ¯å¤©2å°æ—¶æŒç»­ä¸€ä¸ªæœˆï¼Œåˆ©ç”¨é—´éš”æ•ˆåº”æå‡é•¿æœŸè®°å¿† retention'¤initb¨PropertyÍÍÂÂÂLªIdentifierÍÍ©isCorrectU§LiteralÍÍÃ¤true¤inita°ObjectExpressionÍ-Íu“b¨PropertyÍ/Í9ÂÂÂLªIdentifierÍ/Í4¥labelU§LiteralÍ6Í9¡B£'B'¤initb¨PropertyÍ;ÍaÂÂÂLªIdentifierÍ;ÍB§contentU§LiteralÍDÍaÙQé›†ä¸­å­¦ä¹ æ›´ä¼˜ï¼šè¿ç»­é«˜å¼ºåº¦å­¦ä¹ å¯ä»¥åœ¨çŸ­æ—¶é—´å†…æŒæ¡å¤§é‡å†…å®¹ÙS'é›†ä¸­å­¦ä¹ æ›´ä¼˜ï¼šè¿ç»­é«˜å¼ºåº¦å­¦ä¹ å¯ä»¥åœ¨çŸ­æ—¶é—´å†…æŒæ¡å¤§é‡å†…å®¹'¤initb¨PropertyÍcÍsÂÂÂLªIdentifierÍcÍl©isCorrectU§LiteralÍnÍsÂ¥false¤inita°ObjectExpressionÍŒÍÉ“b¨PropertyÍÍ˜ÂÂÂLªIdentifierÍÍ“¥labelU§LiteralÍ•Í˜¡C£'C'¤initb¨PropertyÍšÍµÂÂÂLªIdentifierÍšÍ¡§contentU§LiteralÍ£ÍµÙ0ä¸¤ç§ç­–ç•¥æ•ˆæœç›¸åŒï¼Œå–å†³äºä¸ªäººåå¥½Ù2'ä¸¤ç§ç­–ç•¥æ•ˆæœç›¸åŒï¼Œå–å†³äºä¸ªäººåå¥½'¤initb¨PropertyÍ·ÍÇÂÂÂLªIdentifierÍ·ÍÀ©isCorrectU§LiteralÍÂÍÇÂ¥false¤inita°ObjectExpressionÍàÍ“b¨PropertyÍâÍìÂÂÂLªIdentifierÍâÍç¥labelU§LiteralÍéÍì¡D£'D'¤initb¨PropertyÍîÍÂÂÂLªIdentifierÍîÍõ§contentU§LiteralÍ÷ÍÙ0åº”è¯¥æ›´æç«¯ï¼šæ¯å¤©å­¦ä¹ 16å°æ—¶è¿ç»­3å¤©Ù2'åº”è¯¥æ›´æç«¯ï¼šæ¯å¤©å­¦ä¹ 16å°æ—¶è¿ç»­3å¤©'¤initb¨PropertyÍÍÂÂÂLªIdentifierÍÍ©isCorrectU§LiteralÍÍÂ¥false¤initQ³ExpressionStatementÍFÍƒR´AssignmentExpressionÍFÍ‚¡=S°MemberExpressionÍFÍSLªIdentifierÍFÍG¡qLªIdentifierÍHÍS«explanationÂÂU§LiteralÍVÍ‚Ù~è®¤çŸ¥å¿ƒç†å­¦ç ”ç©¶è¡¨æ˜ï¼Œé—´éš”å­¦ä¹ ï¼ˆåˆ†æ•£ç»ƒä¹ ï¼‰èƒ½æ˜¾è‘—æå‡é•¿æœŸè®°å¿†æ•ˆæœï¼Œä¼˜äºé›†ä¸­å¡«é¸­å¼å­¦ä¹ ã€‚Ù€'è®¤çŸ¥å¿ƒç†å­¦ç ”ç©¶è¡¨æ˜ï¼Œé—´éš”å­¦ä¹ ï¼ˆåˆ†æ•£ç»ƒä¹ ï¼‰èƒ½æ˜¾è‘—æå‡é•¿æœŸè®°å¿†æ•ˆæœï¼Œä¼˜äºé›†ä¸­å¡«é¸­å¼å­¦ä¹ ã€‚'c®BreakStatementÍ•Í›ÀS°MemberExpressionÍÍLªIdentifierÍÍªBloomLevelLªIdentifierÍÍ¨EVALUATEÂÂ`ªSwitchCaseÍ©Í”Q³ExpressionStatementÍÒÍR´AssignmentExpressionÍÒÍ¡=S°MemberExpressionÍÒÍàLªIdentifierÍÒÍÓ¡qLªIdentifierÍÔÍà¬questionTextÂÂ\¯TemplateLiteralÍãÍ‘LªIdentifierÍéÍî¥topic’]¯TemplateElementÍäÍç^©åŸºäºã€Œ©åŸºäºã€ŒÂ]¯TemplateElementÍïÍ^ÙZã€çš„å­¦ä¹ å¿ƒå¾—ï¼Œè¯·è®¾è®¡ä¸€ä¸ªåˆ›æ–°çš„å­¦ä¹ æ–¹æ¡ˆï¼Œå¸®åŠ©åˆå­¦è€…é«˜æ•ˆå…¥é—¨ã€‚ÙZã€çš„å­¦ä¹ å¿ƒå¾—ï¼Œè¯·è®¾è®¡ä¸€ä¸ªåˆ›æ–°çš„å­¦ä¹ æ–¹æ¡ˆï¼Œå¸®åŠ©åˆå­¦è€…é«˜æ•ˆå…¥é—¨ã€‚ÃQ³ExpressionStatementÍ!Í¥R´AssignmentExpressionÍ!Í¤¡=S°MemberExpressionÍ!Í*LªIdentifierÍ!Í"¡qLªIdentifierÍ#Í*§optionsÂÂV¯ArrayExpressionÍ-Í¤”a°ObjectExpressionÍDÍ¨“b¨PropertyÍFÍPÂÂÂLªIdentifierÍFÍK¥labelU§LiteralÍMÍP¡A£'A'¤initb¨PropertyÍRÍ•ÂÂÂLªIdentifierÍRÍY§contentU§LiteralÍ[Í•Ùè®¾è®¡"ä¸‰é˜¶ä¹æ­¥"å­¦ä¹ æ³•ï¼šç¬¬ä¸€é˜¶æ®µå»ºç«‹å¿ƒæ™ºåœ°å›¾ï¼ˆ3æ­¥ï¼‰ï¼Œç¬¬äºŒé˜¶æ®µåŒæ­¥å®è·µéªŒè¯ï¼ˆ3æ­¥ï¼‰ï¼Œç¬¬ä¸‰é˜¶æ®µçŸ¥è¯†åˆ›æ–°è¾“å‡ºï¼ˆ3æ­¥ï¼‰Ù 'è®¾è®¡"ä¸‰é˜¶ä¹æ­¥"å­¦ä¹ æ³•ï¼šç¬¬ä¸€é˜¶æ®µå»ºç«‹å¿ƒæ™ºåœ°å›¾ï¼ˆ3æ­¥ï¼‰ï¼Œç¬¬äºŒé˜¶æ®µåŒæ­¥å®è·µéªŒè¯ï¼ˆ3æ­¥ï¼‰ï¼Œç¬¬ä¸‰é˜¶æ®µçŸ¥è¯†åˆ›æ–°è¾“å‡ºï¼ˆ3æ­¥ï¼‰'¤initb¨PropertyÍ—Í¦ÂÂÂLªIdentifierÍ—Í ©isCorrectU§LiteralÍ¢Í¦Ã¤true¤inita°ObjectExpressionÍ¿Í÷“b¨PropertyÍÁÍËÂÂÂLªIdentifierÍÁÍÆ¥labelU§LiteralÍÈÍË¡B£'B'¤initb¨PropertyÍÍÍãÂÂÂLªIdentifierÍÍÍÔ§contentU§LiteralÍÖÍãÙ!éšä¾¿çœ‹çœ‹è§†é¢‘å’Œæ–‡ç« å°±è¡ŒÙ#'éšä¾¿çœ‹çœ‹è§†é¢‘å’Œæ–‡ç« å°±è¡Œ'¤initb¨PropertyÍåÍõÂÂÂLªIdentifierÍåÍî©isCorrectU§LiteralÍğÍõÂ¥false¤inita°ObjectExpressionÍÍC“b¨PropertyÍÍÂÂÂLªIdentifierÍÍ¥labelU§LiteralÍÍ¡C£'C'¤initb¨PropertyÍÍ/ÂÂÂLªIdentifierÍÍ#§contentU§LiteralÍ%Í/¸åªåšé¢˜ç›®ä¸å­¦ç†è®ºº'åªåšé¢˜ç›®ä¸å­¦ç†è®º'¤initb¨PropertyÍ1ÍAÂÂÂLªIdentifierÍ1Í:©isCorrectU§LiteralÍ<ÍAÂ¥false¤inita°ObjectExpressionÍZÍ“b¨PropertyÍ\ÍfÂÂÂLªIdentifierÍ\Ía¥labelU§LiteralÍcÍf¡D£'D'¤initb¨PropertyÍhÍ|ÂÂÂLªIdentifierÍhÍo§contentU§LiteralÍqÍ|»è®©åˆ«äººæ›¿å­¦ç„¶åè½¬è¿°½'è®©åˆ«äººæ›¿å­¦ç„¶åè½¬è¿°'¤initb¨PropertyÍ~ÍÂÂÂLªIdentifierÍ~Í‡©isCorrectU§LiteralÍ‰ÍÂ¥false¤initQ³ExpressionStatementÍ·ÍôR´AssignmentExpressionÍ·Íó¡=S°MemberExpressionÍ·ÍÄLªIdentifierÍ·Í¸¡qLªIdentifierÍ¹ÍÄ«explanationÂÂU§LiteralÍÇÍóÙ~ä¼˜ç§€çš„å­¦ä¹ æ–¹æ¡ˆåº”è¯¥åŒ…å«ï¼šçŸ¥è¯†æ¡†æ¶å»ºç«‹ã€å®è·µéªŒè¯ã€åˆ›æ–°è¾“å‡ºä¸‰ä¸ªå®Œæ•´é˜¶æ®µï¼Œå½¢æˆå­¦ä¹ é—­ç¯ã€‚Ù€'ä¼˜ç§€çš„å­¦ä¹ æ–¹æ¡ˆåº”è¯¥åŒ…å«ï¼šçŸ¥è¯†æ¡†æ¶å»ºç«‹ã€å®è·µéªŒè¯ã€åˆ›æ–°è¾“å‡ºä¸‰ä¸ªå®Œæ•´é˜¶æ®µï¼Œå½¢æˆå­¦ä¹ é—­ç¯ã€‚'c®BreakStatementÍÍÀS°MemberExpressionÍ®Í¿LªIdentifierÍ®Í¸ªBloomLevelLªIdentifierÍ¹Í¿¦CREATEÂÂX¯ReturnStatementÍ!Í*LªIdentifierÍ(Í)¡qÀ

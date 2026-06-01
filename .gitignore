@@ -1,8 +1,1 @@
-.hvigor
-.idea
-build
-oh_modules
-local.properties
-*.hap
-*.hsp
-*.har
+node_modules/ 
