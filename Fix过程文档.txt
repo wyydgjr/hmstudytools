@@ -1,0 +1,118 @@
+三问学习机 - 开发过程文档
+==========================
+日期: 2026-06-01
+开发环境: DevEco Studio 6.0.2.642 + HarmonyOS SDK 6.0.2(API 22)
+
+一、开发环境配置
+----------------
+1. DevEco Studio 6.0.2.642 已安装在 C:\Program Files\Huawei\DevEco Studio
+2. HarmonyOS SDK 6.0.2 已安装在 C:\Users\wyyd\AppData\Local\Huawei\Sdk
+3. 模拟器镜像: HarmonyOS-6.0.2 (支持 nova 15, Pura 90 Pro Max 等设备)
+
+二、项目结构
+------------
+study/
+├── AppScope/              # 应用级配置
+├── entry/                 # 主模块
+│   ├── src/main/ets/
+│   │   ├── entryability/  # Ability入口
+│   │   ├── pages/         # 6个页面 (Index, LearningSpace, ThreeQuestions, Profile, AIChat, AISettings)
+│   │   ├── components/    # 3个自定义组件 (CourseCard, KnowledgeGraph, RadarChart)
+│   │   ├── model/         # 5个数据模型 (CourseModel, LearningData, AIService, QuestionModel, MaterialModel)
+│   │   └── utils/         # 2个工具类 (Constants, StorageUtil)
+│   └── src/main/resources/ # 资源文件
+└── 配置文件 (build-profile.json5, hvigorfile.ts 等)
+
+三、关键技术决策
+----------------
+1. 页面导航: 使用 router.pushUrl/router.back (默认导航方案)
+2. 数据模型: 纯内存模型 + AppStorage持久化
+3. 知识图谱: Shape组件(Path+Circle)实现而非Canvas,避免复杂绘图API依赖
+4. 能力雷达图: Progress(Ring)环形进度条组件组合实现
+5. 测评引擎: 基于布鲁姆认知六层级生成模拟题目
+6. 大模型接入: OpenAI兼容API接口,支持多种模型(DeepSeek/Qwen/GLM等)
+7. 资料管理: 复合知识库模型,支持AI补充+用户上传,按课程维度管理
+
+四、增强功能说明 (2026-06-01 v2.0)
+--------------------------------
+
+### 1. AI服务增强 (AIService.ets)
+- 优化知识图谱、学术分歧、测评题的Prompt工程,输出更高质量内容
+- 新增 webSearch() 联网搜索模拟,用LLM生成搜索结果
+- 新增 generateCourseMaterials() 课程资料生成
+- 新增 generateStudyRecommendations() 个性化学习建议
+- 新增重试机制(指数退避)处理API限流和服务器错误
+- 新增流式模拟 simulateStreaing(),分割长文本为语义块
+
+### 2. 三问认知引擎增强 (ThreeQuestions.ets)
+- Q1: AI一键生成知识图谱,树形可展开视图
+- Q2: AI挖掘学术分歧,证据链可视化("证据A → 综合结论 ← 证据B")
+- Q3: AI生成布鲁姆六层级测评题,显示AI智能解析
+- 新增三问进度指示器(Q1/Q2/Q3完成状态条)
+- 平滑Tab切换动画
+
+### 3. 复合知识库 (LearningSpace.ets + MaterialModel)
+- 新增"知识库"模块,按来源分类(AI补充/用户上传)
+- 支持关键词搜索过滤资料
+- 支持上传文字/URL内容作为学习资料
+- AI一键补充课程资料
+- 资料详情弹窗(类型标签、来源标签、关键词标签)
+
+### 4. 学习评价报告增强 (Profile.ets)
+- AI智能评估:调用大模型生成个性化学习评估
+- 数据总览仪表盘:总课程/已完成/平均正确率/学习时长
+- 每周学习活动柱状图(近7天学习分钟)
+- 得分趋势图(每日正确率)
+- 多格式导出:复制报告/Markdown/JSON/PDF(预告)
+- 答题对话原始记录增强显示
+
+### 5. 首页游戏化与UI焕新 (Index.ets + CourseCard.ets)
+- 时段问候语(早上好/下午好/晚上好等)
+- 渐变科技蓝头部 + 圆角设计
+- 学习统计条:课程总数/已完成/连续学习天数
+- 快捷操作按钮:继续学习/新课程/成就
+- 成就系统:5个成就徽章(初学者/勤学者/学霸/批判思维者/测评达人)
+- 连续学习天数追踪(Study Streak)
+- 搜索框自动补全已有课程
+- 卡片滑入动画 + 完成辉光效果
+- 成就获得庆祝弹窗
+
+### 6. 数据持久化增强 (StorageUtil.ets + LearningData.ets)
+- 新增q3Accuracy、lastAccessedAt字段持久化
+- 成就数据持久化
+- 连续学习数据持久化
+- 课程资料数据持久化
+
+五、文件变更清单
+----------------
+- model/AIService.ets: 393行 → 829行 (重写,新增三大功能)
+- model/CourseModel.ets: 新增AchievementInfo类、q3Accuracy/lastAccessedAt字段
+- model/LearningData.ets: 新增成就系统、连续学习、资料管理、学习统计方法
+- model/MaterialModel.ets: 原文件保留,与LearningSpace联动
+- utils/Constants.ets: 新增渐变色、成就ID常量
+- utils/StorageUtil.ets: 扩展数据加载/保存,支持所有新字段
+- pages/Index.ets: 350行 → 571行 (游戏化改造)
+- pages/LearningSpace.ets: 596行 → 1212行 (新增知识库模块)
+- pages/ThreeQuestions.ets: 649行 → 1199行 (AI三问增强)
+- pages/Profile.ets: 576行 → 964行 (AI评估+导出+统计)
+- components/CourseCard.ets: 新增状态徽章、完成动画
+
+六、运行方式
+------------
+1. 用 DevEco Studio 打开 C:\Users\wyyd\Desktop\study 目录
+2. 等待项目同步完成 (自动下载依赖)
+3. Tools -> Device Manager -> Local Emulator 启动模拟器
+4. 选择设备点击 Run 运行
+5. 效果视频可用 Bandicam / OBS Studio 等录制
+
+七、效果视频录制建议
+--------------------
+1. 启动模拟器，运行App
+2. 演示首页: 问候语、统计条、快速操作按钮
+3. 搜索"鸿蒙ArkTS开发" -> 创建课程 (展示成就弹窗)
+4. 进入学习空间 -> 查看知识库 -> AI补充资料
+5. 进入Q1 -> AI生成知识图谱 -> 展开节点
+6. 进入Q2 -> AI挖掘学术分歧 -> 查看证据链
+7. 进入Q3 -> AI生成测评题 -> 完成6题 -> 查看结果
+8. 进入评价报告 -> 查看AI评估 -> 复制/导出报告
+9. 返回首页 -> 查看成就面板 -> 连续学习天数

@@ -1,0 +1,10 @@
+{
+  "name": "threequestionlearner",
+  "version": "1.0.0",
+  "description": "三问高效学习机",
+  "main": "",
+  "author": {},
+  "license": "Apache-2.0",
+  "devDependencies": {},
+  "dependencies": {}
+}

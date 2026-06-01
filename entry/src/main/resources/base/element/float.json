@@ -1,0 +1,20 @@
+{
+  "float": [
+    {
+      "name": "list_item_space",
+      "value": "12vp"
+    },
+    {
+      "name": "card_radius",
+      "value": "16vp"
+    },
+    {
+      "name": "button_radius",
+      "value": "12vp"
+    },
+    {
+      "name": "icon_size",
+      "value": "24vp"
+    }
+  ]
+}

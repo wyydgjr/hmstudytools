@@ -1,0 +1,16 @@
+{
+  "app": {
+    "bundleName": "com.threeq.learner",
+    "vendor": "ThreeQ",
+    "versionCode": 1000000,
+    "versionName": "1.0.0",
+    "icon": "$media:app_icon",
+    "label": "$string:app_name",
+    "description": "三问高效学习机",
+    "minAPIVersion": 22,
+    "targetAPIVersion": 22,
+    "car": {
+      "minAPIVersion": 22
+    }
+  }
+}

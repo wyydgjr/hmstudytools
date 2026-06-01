@@ -1,0 +1,33 @@
+export class Constants {
+  static readonly APP_NAME: string = '三问学习机';
+  static readonly APP_DESC: string = '三问高效学习法 · 任何课程一网打尽';
+  static readonly SEARCH_PLACEHOLDER: string = '输入你想学习的课程或问题...';
+  static readonly TITLE_MENTAL_MODEL: string = '第一问：核心心智模型';
+  static readonly TITLE_DISAGREEMENT: string = '第二问：学术分歧挖掘';
+  static readonly TITLE_ASSESSMENT: string = '第三问：深度测评';
+  static readonly COLOR_PRIMARY: number = 0xFF0078D7;
+  static readonly COLOR_PRIMARY_LIGHT: number = 0xFF4BA3E3;
+  static readonly COLOR_BACKGROUND: number = 0xFFF5F7FA;
+  static readonly COLOR_CARD: number = 0xFFFFFFFF;
+  static readonly COLOR_TEXT: number = 0xFF1A1A2E;
+  static readonly COLOR_TEXT_SECONDARY: number = 0xFF6B7280;
+  static readonly COLOR_ACCENT_GREEN: number = 0xFF10B981;
+  static readonly COLOR_ACCENT_ORANGE: number = 0xFFF59E0B;
+  static readonly COLOR_ACCENT_RED: number = 0xFFEF4444;
+  static readonly COLOR_ACCENT_PURPLE: number = 0xFF8B5CF6;
+  static readonly COLOR_DIVIDER: number = 0xFFE5E7EB;
+  static readonly COLOR_ACCENT_BLUE_LIGHT: number = 0xFFE3F2FD;
+  static readonly COLOR_GRADIENT_START: number = 0xFF005A9E;
+  static readonly COLOR_GRADIENT_MID: number = 0xFF0078D7;
+  static readonly COLOR_GRADIENT_END: number = 0xFF4BA3E3;
+
+  static readonly Q1_INFO: string = '提取学科核心心智模型，构建动态知识图谱';
+  static readonly Q2_INFO: string = '挖掘学术争议点，对比多源观点，培养批判性思维';
+  static readonly Q3_INFO: string = '基于布鲁姆认知层级，生成多维度自测题';
+
+  static readonly ACH_FIRST_COURSE: string = 'first_course';
+  static readonly ACH_COMPLETED_3: string = 'completed_3';
+  static readonly ACH_COMPLETED_5: string = 'completed_5';
+  static readonly ACH_CRITICAL_THINKER: string = 'critical_thinker';
+  static readonly ACH_ASSESSMENT_MASTER: string = 'assessment_master';
+}
